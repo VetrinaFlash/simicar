@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { getDb, schema } from "@/lib/db";
+import { getEnv } from "@/lib/env";
+import { FIXED_ADMIN_EMAIL } from "@/lib/fixed-admin";
 import { randomToken, sha256Hex } from "@/lib/security/crypto";
 import { userAgent } from "@/lib/security/request";
 
@@ -56,7 +58,10 @@ export const getCurrentUser = cache(async (): Promise<AdminUser | null> => {
     .where(and(eq(schema.sessions.id, id), gt(schema.sessions.expiresAt, Date.now())))
     .limit(1);
   const row = rows[0];
-  if (!row) return null;
+  // Solo l'account fisso è autorizzato; i vecchi account non mantengono accesso.
+  if (!row || row.email !== FIXED_ADMIN_EMAIL) return null;
+  const env = await getEnv();
+  if (!env.ADMIN_PASSWORD || env.ADMIN_PASSWORD.length < 8) return null;
 
   if (row.expiresAt - Date.now() < SESSION_RENEW_MS) {
     const expiresAt = Date.now() + SESSION_TTL_MS;

@@ -17,7 +17,7 @@ declare global {
     VAPID_SUBJECT: string;
     IP_HASH_SALT?: string;
     CRON_SECRET?: string;
-    ADMIN_SETUP_TOKEN?: string;
+    ADMIN_PASSWORD?: string;
     CARGOS_USERNAME?: string;
     CARGOS_PASSWORD?: string;
     CARGOS_API_KEY?: string;

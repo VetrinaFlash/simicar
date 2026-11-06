@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "noleggio-gestionale",
+  "main": "custom-worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "observability": { "enabled": true },
+  // Crea con: npx wrangler d1 create noleggio-db  → incolla qui il database_id
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "noleggio-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Crea con: npx wrangler r2 bucket create noleggio-media
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "noleggio-media" }],
+  // Promemoria ritiri/riconsegne e scadenze flotta (ogni giorno alle 6:00 UTC)
+  "triggers": { "crons": ["0 6 * * *"] },
+  "vars": {
+    "APP_ENV": "production",
+    "PUBLIC_SITE_URL": "https://example.it",
+    "RESEND_FROM": "Prenotazioni <prenotazioni@example.it>",
+    "VAPID_SUBJECT": "mailto:admin@example.it",
+    "NEXT_PUBLIC_TURNSTILE_SITE_KEY": ""
+  }
+  // Segreti (npx wrangler secret put NOME):
+  //   RESEND_API_KEY, TURNSTILE_SECRET_KEY, CRON_SECRET, ADMIN_SETUP_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, IP_HASH_SALT
+}

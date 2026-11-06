@@ -1,0 +1,11 @@
+APP_ENV=development
+PUBLIC_SITE_URL=http://localhost:8787
+RESEND_API_KEY=
+RESEND_FROM=Prenotazioni <onboarding@resend.dev>
+TURNSTILE_SECRET_KEY=
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:admin@example.it
+IP_HASH_SALT=cambia-questo-valore
+CRON_SECRET=dev-cron-secret
+ADMIN_SETUP_TOKEN=dev-setup-token-123456

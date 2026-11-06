@@ -1,0 +1,97 @@
+@import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
+
+@theme {
+  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Palette dal logo Manhattan: rosso insegna, blu skyline, navy notte */
+  --color-concrete: #eef1f6;
+  --color-concrete-2: #e2e7ef;
+  --color-paper: #ffffff;
+  --color-ink: #0c1838;
+  --color-ink-2: #46506a;
+  --color-ink-3: #7a8399;
+  --color-line: #d2d9e5;
+  --color-eu: #0a4a9c;
+  --color-eu-deep: #0a1f5c;
+  --color-eu-soft: #e2eaf7;
+  --color-red: #e1000f;
+  --color-red-deep: #b4000c;
+  --color-signal: #f2c230;
+  --color-signal-soft: #fdf3d2;
+  --color-go: #1d7f55;
+  --color-go-soft: #dcf0e6;
+  --color-stop: #c0362c;
+  --color-stop-soft: #f8e1df;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-concrete text-ink font-sans;
+    font-variation-settings: "wdth" 100;
+  }
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-ink);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-eu);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
+}
+
+@utility font-wide {
+  font-stretch: 125%;
+  font-variation-settings: "wdth" 125;
+}
+@utility font-narrow {
+  font-stretch: 75%;
+  font-variation-settings: "wdth" 75;
+}
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pannello "cartello": navy con bordo bianco interno, come le insegne e il logo */
+@utility road-sign {
+  background: var(--color-eu-deep);
+  color: #fff;
+  border-radius: 22px;
+  box-shadow:
+    inset 0 0 0 6px var(--color-eu-deep),
+    inset 0 0 0 9px #fff,
+    0 30px 60px -30px rgb(10 31 92 / 0.6);
+}
+
+/* Blocchi indisponibili nel calendario */
+@utility hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgb(21 26 34 / 0.09) 0 6px,
+    transparent 6px 12px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

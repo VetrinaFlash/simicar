@@ -122,6 +122,7 @@ export const customerSchema = z.object({
   phone: optional(25),
   birthDate: optDate,
   birthPlace: optional(80),
+  citizenship: optional(60),
   taxCode: z
     .string()
     .trim()
@@ -132,9 +133,11 @@ export const customerSchema = z.object({
   address: optional(200),
   licenseNumber: optional(30),
   licenseExpiry: optDate,
+  licenseIssuedBy: optional(80),
   docType: optional(30),
   docNumber: optional(30),
   docExpiry: optDate,
+  docIssuedBy: optional(80),
   notes: optional(2000),
   blacklisted: z
     .string()

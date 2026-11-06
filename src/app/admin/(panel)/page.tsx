@@ -1,5 +1,5 @@
-import { and, asc, count, eq, gte, inArray, lt, ne } from "drizzle-orm";
-import { ArrowDownLeft, ArrowUpRight, Phone } from "lucide-react";
+import { and, asc, count, eq, gte, inArray, isNull, lt, ne } from "drizzle-orm";
+import { ArrowDownLeft, ArrowUpRight, Phone, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { PushToggle } from "@/components/push-toggle";
 import { Badge, Empty, LinkButton, Panel, PanelHeader, StatusBadge } from "@/components/ui";
@@ -32,7 +32,7 @@ export default async function DashboardPage() {
       .leftJoin(schema.customers, eq(schema.customers.id, schema.bookings.customerId));
   const rental = and(eq(schema.bookings.kind, "rental"), eq(schema.bookings.status, "confirmed"));
 
-  const [pickups, returns, pending, week, vehicles, [out]] = await Promise.all([
+  const [pickups, returns, pending, week, vehicles, [out], cargos] = await Promise.all([
     joined().where(and(rental, gte(schema.bookings.startAt, dayStart), lt(schema.bookings.startAt, dayEnd))).orderBy(asc(schema.bookings.startAt)),
     joined().where(and(rental, gte(schema.bookings.endAt, dayStart), lt(schema.bookings.endAt, dayEnd))).orderBy(asc(schema.bookings.endAt)),
     joined().where(and(eq(schema.bookings.status, "pending"), eq(schema.bookings.kind, "rental"))).orderBy(asc(schema.bookings.createdAt)).limit(5),
@@ -42,6 +42,11 @@ export default async function DashboardPage() {
       .select({ n: count() })
       .from(schema.bookings)
       .where(and(inArray(schema.bookings.status, ["confirmed"]), lt(schema.bookings.startAt, now), gte(schema.bookings.endAt, now))),
+    // Noleggi confermati che partono entro 48 ore (o già partiti) senza comunicazione CaRGOS
+    joined()
+      .where(and(rental, isNull(schema.bookings.cargosSentAt), lt(schema.bookings.startAt, now + 48 * 3_600_000), gte(schema.bookings.endAt, now)))
+      .orderBy(asc(schema.bookings.startAt))
+      .limit(6),
   ]);
 
   const maintenance = vehicles.filter((v) => v.status === "maintenance").length;
@@ -110,6 +115,32 @@ export default async function DashboardPage() {
                     <p className="truncate text-sm text-ink-3">{vehicleName(r.v)} · {fmtDateTime(r.b.startAt)}</p>
                   </div>
                   <StatusBadge status="pending" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
+
+      {cargos.length > 0 && (
+        <Panel className="ring-2 ring-red/50">
+          <PanelHeader
+            title={
+              <span className="flex items-center gap-2">
+                <ShieldAlert className="size-5 text-red" /> Da comunicare a CaRGOS
+              </span>
+            }
+            sub="Noleggi in partenza entro 48 ore senza invio dei dati alla Polizia."
+          />
+          <ul className="divide-y divide-line/60 px-5 pb-2">
+            {cargos.map((r) => (
+              <li key={r.b.id}>
+                <Link href={`/admin/prenotazioni/${r.b.id}`} className="flex items-center justify-between gap-3 py-3 hover:opacity-80">
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{r.c?.firstName} {r.c?.lastName}</p>
+                    <p className="truncate text-sm text-ink-3">{vehicleName(r.v)} · ritiro {fmtDateTime(r.b.startAt)}</p>
+                  </div>
+                  <Badge tone="danger">Da inviare</Badge>
                 </Link>
               </li>
             ))}

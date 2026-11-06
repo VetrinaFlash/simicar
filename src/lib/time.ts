@@ -107,3 +107,14 @@ export function relativeTime(ms: number): string {
   if (d < 7) return `${d} ${d === 1 ? "giorno" : "giorni"} fa`;
   return fmtDate(ms);
 }
+
+const dtFullFmt = new Intl.DateTimeFormat("it-IT", {
+  timeZone: TZ,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+/** Formato per documenti: 06/11/2026, 09:00 */
+export const fmtDateTimeFull = (ms: number) => dtFullFmt.format(ms);

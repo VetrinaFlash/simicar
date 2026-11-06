@@ -242,3 +242,14 @@ export async function createAdminBookingAction(_p: ActionResult, form: FormData)
   refresh();
   redirect(d.kind === "block" ? "/admin/calendario" : `/admin/prenotazioni/${created.id}`);
 }
+
+/** Segna (o annulla) l'invio dei dati a CaRGOS. */
+export async function setCargosSentAction(bookingId: string, sent: boolean): Promise<ActionResult> {
+  const me = await requireAdmin();
+  if (!id.safeParse(bookingId).success) return { error: "Dati non validi." };
+  return guard(async () => {
+    const db = await getDb();
+    await db.update(schema.bookings).set({ cargosSentAt: sent ? Date.now() : null, updatedAt: Date.now() }).where(eq(schema.bookings.id, bookingId));
+    await audit(sent ? "cargos.sent" : "cargos.unsent", { userId: me.id, entity: "booking", entityId: bookingId });
+  });
+}

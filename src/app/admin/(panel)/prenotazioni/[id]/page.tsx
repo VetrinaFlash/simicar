@@ -9,7 +9,7 @@ import { findConflicts } from "@/lib/bookings";
 import { getDb, schema } from "@/lib/db";
 import { fmtDateLong, fmtDateTime, fmtDuration, relativeTime, toRomeDate, toRomeTime } from "@/lib/time";
 import { vehicleName } from "@/lib/vehicles";
-import { CancelBooking, DecisionPanel, DetailsForm, HandoverForms, MoveForm } from "../booking-actions";
+import { CancelBooking, DecisionPanel, DetailsForm, DocumentsPanel, HandoverForms, MoveForm } from "../booking-actions";
 
 export const metadata = { title: "Prenotazione" };
 
@@ -107,6 +107,14 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
             <Panel className="p-5">
               <p className="mb-4 text-[17px] font-bold">Rispondi alla richiesta</p>
               <DecisionPanel bookingId={b.id} depositEur={b.depositEur} priceEur={b.priceEur} />
+            </Panel>
+          )}
+
+          {(b.status === "confirmed" || b.status === "completed") && !isBlock && (
+            <Panel className="p-5">
+              <p className="mb-1 text-[15px] font-bold">Documenti</p>
+              <p className="mb-4 text-sm text-ink-3">Contratto da far firmare al ritiro e dati da comunicare alla Polizia (CaRGOS).</p>
+              <DocumentsPanel bookingId={b.id} cargosSentAt={b.cargosSentAt} />
             </Panel>
           )}
 

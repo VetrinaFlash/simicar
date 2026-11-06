@@ -29,8 +29,9 @@ export function CustomerForm({
           <Field label="Email"><Input name="email" type="email" inputMode="email" defaultValue={c?.email ?? ""} /></Field>
           <Field label="Data di nascita"><Input name="birthDate" type="date" defaultValue={c?.birthDate ?? ""} /></Field>
           <Field label="Luogo di nascita"><Input name="birthPlace" defaultValue={c?.birthPlace ?? ""} /></Field>
+          <Field label="Cittadinanza"><Input name="citizenship" defaultValue={c?.citizenship ?? ""} placeholder="Italiana" /></Field>
           <Field label="Codice fiscale"><Input name="taxCode" defaultValue={c?.taxCode ?? ""} maxLength={16} className="uppercase" /></Field>
-          <Field label="Indirizzo di residenza"><Input name="address" defaultValue={c?.address ?? ""} /></Field>
+          <Field label="Indirizzo di residenza" className="sm:col-span-2"><Input name="address" defaultValue={c?.address ?? ""} /></Field>
         </div>
       </Panel>
       <Panel>
@@ -38,10 +39,11 @@ export function CustomerForm({
         <div className="grid gap-4 px-5 pb-5 sm:grid-cols-2 lg:grid-cols-3">
           <Field label="Numero patente"><Input name="licenseNumber" defaultValue={c?.licenseNumber ?? ""} className="uppercase" /></Field>
           <Field label="Scadenza patente"><Input name="licenseExpiry" type="date" defaultValue={c?.licenseExpiry ?? ""} /></Field>
-          <div className="hidden lg:block" />
+          <Field label="Patente rilasciata da"><Input name="licenseIssuedBy" defaultValue={c?.licenseIssuedBy ?? ""} placeholder="MIT-UCO" /></Field>
           <Field label="Tipo documento"><Input name="docType" defaultValue={c?.docType ?? ""} placeholder="Carta d'identità" /></Field>
           <Field label="Numero documento"><Input name="docNumber" defaultValue={c?.docNumber ?? ""} className="uppercase" /></Field>
           <Field label="Scadenza documento"><Input name="docExpiry" type="date" defaultValue={c?.docExpiry ?? ""} /></Field>
+          <Field label="Documento rilasciato da"><Input name="docIssuedBy" defaultValue={c?.docIssuedBy ?? ""} placeholder="Comune di …" /></Field>
         </div>
       </Panel>
       <Panel>

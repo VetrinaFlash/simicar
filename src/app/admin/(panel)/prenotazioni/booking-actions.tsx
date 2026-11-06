@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, X } from "lucide-react";
+import { Check, FileText, ShieldCheck, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useActionState, useState, useTransition } from "react";
 import {
@@ -10,6 +10,7 @@ import {
   moveBookingFormAction,
   rejectBookingAction,
   returnAction,
+  setCargosSentAction,
   updateBookingDetailsAction,
   type ActionResult,
 } from "@/app/admin/actions/bookings";
@@ -286,6 +287,36 @@ export function CancelBooking({ bookingId, canNotify }: { bookingId: string; can
         {pending ? "Annullamento…" : "Annulla prenotazione"}
       </Button>
       <FormError message={error} />
+    </div>
+  );
+}
+
+export function DocumentsPanel({ bookingId, cargosSentAt }: { bookingId: string; cargosSentAt: number | null }) {
+  const [pending, start] = useTransition();
+  const [sent, setSent] = useState(cargosSentAt);
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
+        <a href={`/api/admin/bookings/${bookingId}/pdf?tipo=contratto`} target="_blank" rel="noopener" className="flex h-11 items-center justify-center gap-2 rounded-xl bg-paper text-[15px] font-semibold ring-1 ring-line hover:ring-ink-3">
+          <FileText className="size-4" /> Contratto PDF
+        </a>
+        <a href={`/api/admin/bookings/${bookingId}/pdf?tipo=cargos`} target="_blank" rel="noopener" className="flex h-11 items-center justify-center gap-2 rounded-xl bg-paper text-[15px] font-semibold ring-1 ring-line hover:ring-ink-3">
+          <ShieldCheck className="size-4" /> Scheda CaRGOS
+        </a>
+      </div>
+      <Checkbox
+        checked={!!sent}
+        disabled={pending}
+        onChange={(e) => {
+          const v = e.target.checked;
+          setSent(v ? Date.now() : null);
+          start(async () => {
+            const r = await setCargosSentAction(bookingId, v);
+            if (r.error) setSent(cargosSentAt);
+          });
+        }}
+        label={sent ? `Dati inviati a CaRGOS (${new Date(sent).toLocaleDateString("it-IT")})` : "Segna come inviato a CaRGOS"}
+      />
     </div>
   );
 }

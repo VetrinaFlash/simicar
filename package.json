@@ -1,5 +1,5 @@
 {
-  "name": "noleggio-gestionale",
+  "name": "simicar",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,11 +10,12 @@
     "typecheck": "tsc --noEmit",
     "cf:build": "opennextjs-cloudflare build",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy && wrangler d1 migrations apply simicar-db --remote",
+    "cf:deploy": "opennextjs-cloudflare deploy && wrangler d1 migrations apply simicar-db --remote",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply DB --local",
-    "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "db:migrate:local": "wrangler d1 migrations apply simicar-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply simicar-db --remote",
     "admin:create": "node scripts/create-admin.mjs",
     "vapid:generate": "node scripts/generate-vapid.mjs"
   },

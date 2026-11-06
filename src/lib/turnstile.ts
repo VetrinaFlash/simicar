@@ -2,10 +2,17 @@ import "server-only";
 import { getEnv, isProduction } from "@/lib/env";
 import { clientIp } from "@/lib/security/request";
 
-/** Verifica anti-bot Cloudflare Turnstile. In produzione, senza chiave, blocca (fail-closed). */
+/**
+ * Verifica anti-bot Cloudflare Turnstile.
+ * - Turnstile non configurato (nessuna chiave): si passa, restano honeypot e limiti di frequenza.
+ * - Chiave pubblica presente ma segreta mancante in produzione: blocca (configurazione incompleta).
+ */
 export async function verifyTurnstile(token: string | null | undefined): Promise<boolean> {
   const env = await getEnv();
-  if (!env.TURNSTILE_SECRET_KEY) return !isProduction(env);
+  if (!env.TURNSTILE_SECRET_KEY) {
+    if (env.NEXT_PUBLIC_TURNSTILE_SITE_KEY && isProduction(env)) return false;
+    return true;
+  }
   if (!token || token.length > 2048) return false;
   const body = new FormData();
   body.append("secret", env.TURNSTILE_SECRET_KEY);

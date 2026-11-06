@@ -48,14 +48,14 @@ const FRONT = buildTowers(42, 60, 40, 150, W);
 
 export function Skyline({ className }: { className?: string }) {
   const reduce = useReducedMotion();
-  const grow = (i: number, layer: number) =>
-    reduce
-      ? {}
-      : {
-          initial: { scaleY: 0 },
-          animate: { scaleY: 1 },
-          transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] as const, delay: 0.15 + layer * 0.18 + (i % 14) * 0.035 },
-        };
+  // initial/animate sempre presenti (coerenti tra server e client); con "riduci movimento" la durata è zero
+  const grow = (i: number, layer: number) => ({
+    initial: { scaleY: 0 },
+    animate: { scaleY: 1 },
+    transition: reduce
+      ? { duration: 0 }
+      : { duration: 0.9, ease: [0.22, 1, 0.36, 1] as const, delay: 0.15 + layer * 0.18 + (i % 14) * 0.035 },
+  });
   return (
     <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" className={className} aria-hidden>
       <g fill="var(--color-eu)" opacity="0.9">

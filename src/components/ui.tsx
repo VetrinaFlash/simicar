@@ -102,7 +102,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 export function StatusBadge({ status, kind }: { status: string; kind?: string }) {
   const s = kind === "block" && status === "confirmed" ? STATUS.block! : (STATUS[status] ?? STATUS.cancelled!);
   return (
-    <span className={clsx("inline-flex h-6 items-center rounded-full px-2.5 text-xs font-semibold ring-1 ring-inset", s.cls)}>
+    <span className={clsx("inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-full px-2.5 text-xs font-semibold ring-1 ring-inset", s.cls)}>
       {s.label}
     </span>
   );

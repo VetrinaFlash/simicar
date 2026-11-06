@@ -3,7 +3,7 @@
 import { ArrowRight } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { cx } from "@/components/ui";
 import { Skyline } from "./skyline";
 import { scrollToId } from "./smooth-scroll";
@@ -35,10 +35,9 @@ export function Hero({
   const [dal, setDal] = useState(initial.dal);
   const [al, setAl] = useState(initial.al);
 
-  // Titolo spezzato in righe "naturali" per la rivelazione a maschera
+  // Rivelazione a maschera parola per parola: il testo va a capo in modo naturale su ogni schermo
   const words = title.split(" ");
-  const mid = Math.ceil(words.length / 2);
-  const lines = words.length > 3 ? [words.slice(0, mid).join(" "), words.slice(mid).join(" ")] : [title];
+  const t = (d: number) => (reduce ? { duration: 0 } : { duration: 0.85, ease, delay: d });
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,13 +57,13 @@ export function Hero({
 
   return (
     <section className="relative overflow-hidden bg-paper pt-28 md:pt-36">
-      <div className="relative z-10 mx-auto grid max-w-[1320px] items-end gap-12 px-5 md:px-8 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+      <div className="relative z-10 mx-auto grid max-w-[1320px] items-end gap-12 px-5 pb-8 md:px-8 md:pb-14 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
         <div>
           {city && (
             <motion.p
-              initial={reduce ? false : { opacity: 0 }}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+              transition={t(0.05)}
               className="mb-5 flex items-center gap-2.5 text-[17px] font-bold text-red"
             >
               <span className="h-[3px] w-8 bg-red" aria-hidden />
@@ -72,23 +71,20 @@ export function Hero({
             </motion.p>
           )}
           <h1 className="font-narrow text-[clamp(3.1rem,8.4vw,7.4rem)] font-black uppercase leading-[0.86] tracking-[-0.01em] text-eu-deep">
-            {lines.map((l, i) => (
-              <span key={i} className="block overflow-hidden pb-[0.06em]">
-                <motion.span
-                  className="block"
-                  initial={reduce ? false : { y: "105%" }}
-                  animate={{ y: 0 }}
-                  transition={{ duration: 0.9, ease, delay: 0.15 + i * 0.09 }}
-                >
-                  {l}
-                </motion.span>
-              </span>
+            {words.map((w, i) => (
+              <Fragment key={i}>
+                <span className="inline-block overflow-hidden pb-[0.06em] align-top">
+                  <motion.span className="inline-block" initial={{ y: "105%" }} animate={{ y: 0 }} transition={t(0.12 + i * 0.05)}>
+                    {w}
+                  </motion.span>
+                </span>{" "}
+              </Fragment>
             ))}
           </h1>
           <motion.p
-            initial={reduce ? false : { opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease, delay: 0.45 }}
+            transition={t(0.45)}
             className="mt-7 max-w-[34rem] text-[clamp(1.05rem,1.5vw,1.25rem)] leading-relaxed text-ink-2"
           >
             {text}
@@ -100,11 +96,11 @@ export function Hero({
           onSubmit={submit}
           action="/"
           method="get"
-          initial={reduce ? false : { opacity: 0, rotate: -5, y: -40 }}
+          initial={{ opacity: 0, rotate: -5, y: -40 }}
           animate={{ opacity: 1, rotate: 0, y: 0 }}
-          transition={{ type: "spring", stiffness: 120, damping: 14, mass: 1.1, delay: 0.35 }}
+          transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 120, damping: 14, mass: 1.1, delay: 0.35 }}
           style={{ transformOrigin: "50% -40%" }}
-          className="road-sign relative mb-10 overflow-hidden p-7 pt-0 md:mb-14 md:p-9 md:pt-0"
+          className="road-sign relative overflow-hidden p-7 pt-0 md:p-9 md:pt-0"
         >
           <div className="-mx-7 mb-6 bg-red px-7 py-3.5 md:-mx-9 md:px-9" style={{ boxShadow: "inset 0 -3px 0 #fff" }}>
             <p className="font-narrow text-[22px] font-black uppercase tracking-wide">Prenota il tuo mezzo</p>
@@ -167,7 +163,7 @@ export function Hero({
           </button>
         </motion.form>
       </div>
-      <Skyline className="pointer-events-none relative -mt-6 block h-[130px] w-full md:-mt-10 md:h-[210px]" />
+      <Skyline className="pointer-events-none relative block h-[120px] w-full md:h-[190px]" />
     </section>
   );
 }

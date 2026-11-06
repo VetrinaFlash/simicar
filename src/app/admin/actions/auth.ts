@@ -40,7 +40,7 @@ export async function loginAction(_prev: LoginState, form: FormData): Promise<Lo
 
   const env = await getEnv();
   const secret = env.ADMIN_PASSWORD;
-  if (!secret || secret.length < 8) return { error: "Accesso non ancora configurato." };
+  if (!secret || secret.length < 8) return { error: "Secret ADMIN_PASSWORD non disponibile nel Worker. Verifica Variables and Secrets e ridistribuisci." };
 
   // Il confronto temporale costante evita differenze osservabili tra credenziali sbagliate.
   const usernameOk = timingSafeEqual(username, FIXED_ADMIN_USERNAME);

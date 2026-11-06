@@ -133,6 +133,14 @@ export const customers = sqliteTable(
     docNumber: text("doc_number"),
     docExpiry: text("doc_expiry"),
     docIssuedBy: text("doc_issued_by"),
+    // Codici CaRGOS (tabella luoghi / documenti della Polizia)
+    birthPlaceCode: integer("birth_place_code"),
+    citizenshipCode: integer("citizenship_code"),
+    residenceCode: integer("residence_code"),
+    residenceName: text("residence_name"),
+    docTypeCode: text("doc_type_code"),
+    docIssuedCode: integer("doc_issued_code"),
+    licenseIssuedCode: integer("license_issued_code"),
     notes: text("notes"),
     blacklisted: integer("blacklisted", { mode: "boolean" }).notNull().default(false),
     blacklistReason: text("blacklist_reason"),
@@ -174,6 +182,10 @@ export const bookings = sqliteTable(
     fuelOut: integer("fuel_out"), // ottavi 0-8
     fuelIn: integer("fuel_in"),
     cargosSentAt: integer("cargos_sent_at"),
+    cargosTransactionId: text("cargos_transaction_id"),
+    cargosError: text("cargos_error"),
+    cargosAttemptAt: integer("cargos_attempt_at"),
+    paymentType: text("payment_type"),
     decidedBy: text("decided_by").references(() => adminUsers.id, { onDelete: "set null" }),
     decidedAt: integer("decided_at"),
     createdAt: integer("created_at").notNull().default(now),
@@ -244,3 +256,16 @@ export const settings = sqliteTable("settings", {
   value: text("value").notNull(),
   updatedAt: integer("updated_at").notNull().default(now),
 });
+
+/* ───────────── Tabelle CaRGOS ───────────── */
+
+export const cargosPlaces = sqliteTable(
+  "cargos_places",
+  {
+    code: integer("code").primaryKey(),
+    name: text("name").notNull(),
+    province: text("province"),
+    kind: text("kind").$type<"comune" | "stato">().notNull(),
+  },
+  (t) => [index("cargos_places_name_idx").on(t.name)],
+);

@@ -6,6 +6,8 @@ import { Plate } from "@/components/plate";
 import { Badge, Panel, PanelHeader, StatusBadge, eur } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { findConflicts } from "@/lib/bookings";
+import { buildCargosRecord, cargosConfigured } from "@/lib/cargos";
+import { getSettings } from "@/lib/settings";
 import { getDb, schema } from "@/lib/db";
 import { fmtDateLong, fmtDateTime, fmtDuration, relativeTime, toRomeDate, toRomeTime } from "@/lib/time";
 import { vehicleName } from "@/lib/vehicles";
@@ -34,6 +36,8 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
   const { b, v, c } = row;
   const isBlock = b.kind === "block";
   const active = b.status === "pending" || b.status === "confirmed";
+  const [settings, cargosOn] = await Promise.all([getSettings(), cargosConfigured()]);
+  const cargosMissing = isBlock ? [] : buildCargosRecord({ b, v, c, s: settings, operator: "x" }).missing;
   const [conflicts, vehicles] = await Promise.all([
     active ? findConflicts(b) : Promise.resolve([]),
     db.select({ id: schema.vehicles.id, brand: schema.vehicles.brand, model: schema.vehicles.model, version: schema.vehicles.version, plate: schema.vehicles.plate })
@@ -114,7 +118,18 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
             <Panel className="p-5">
               <p className="mb-1 text-[15px] font-bold">Documenti</p>
               <p className="mb-4 text-sm text-ink-3">Contratto da far firmare al ritiro e dati da comunicare alla Polizia (CaRGOS).</p>
-              <DocumentsPanel bookingId={b.id} cargosSentAt={b.cargosSentAt} />
+              <DocumentsPanel
+                bookingId={b.id}
+                customerId={c?.id ?? null}
+                cargos={{
+                  configured: cargosOn,
+                  sentAt: b.cargosSentAt,
+                  transactionId: b.cargosTransactionId,
+                  error: b.cargosError,
+                  missing: cargosMissing,
+                  paymentType: b.paymentType ?? settings.cargosPaymentType,
+                }}
+              />
             </Panel>
           )}
 

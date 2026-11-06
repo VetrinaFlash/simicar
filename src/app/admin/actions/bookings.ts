@@ -25,7 +25,12 @@ import { getSettings } from "@/lib/settings";
 import { romeToUtc } from "@/lib/time";
 import { MAX_RENTAL_MS, adminBookingSchema, firstError, hhmm, isoDate } from "@/lib/validation";
 
-export type ActionResult = { ok?: boolean; error?: string };
+export type ActionResult = { ok?: boolean; error?: string; emailed?: boolean };
+
+async function emailsOn() {
+  const { getEnv } = await import("@/lib/env");
+  return !!(await getEnv()).RESEND_API_KEY;
+}
 
 function refresh() {
   revalidatePath("/admin", "layout");
@@ -45,6 +50,18 @@ async function guard<T>(fn: () => Promise<T>): Promise<ActionResult> {
 }
 
 const id = z.string().uuid();
+const paymentType = z.enum(["0", "1", "2", "3", "4", "9"]).optional();
+
+export async function setPaymentTypeAction(bookingId: string, value: string): Promise<ActionResult> {
+  await requireAdmin();
+  const v = paymentType.safeParse(value);
+  if (!id.safeParse(bookingId).success || !v.success) return { error: "Dati non validi." };
+  return guard(async () => {
+    const db = await getDb();
+    await db.update(schema.bookings).set({ paymentType: v.data ?? null }).where(eq(schema.bookings.id, bookingId));
+  });
+}
+
 const money = z
   .union([z.literal(""), z.coerce.number().min(0).max(1_000_000)])
   .optional()
@@ -54,20 +71,22 @@ export async function confirmBookingAction(bookingId: string, _p: ActionResult, 
   const me = await requireAdmin();
   const parsed = z.object({ priceEur: money, depositEur: money }).safeParse(Object.fromEntries(form));
   if (!id.safeParse(bookingId).success || !parsed.success) return { error: "Dati non validi." };
-  return guard(async () => {
+  const r = await guard(async () => {
     await confirmBooking(bookingId, me.id, parsed.data);
     await audit("booking.confirmed", { userId: me.id, entity: "booking", entityId: bookingId });
   });
+  return r.ok ? { ...r, emailed: await emailsOn() } : r;
 }
 
 export async function rejectBookingAction(bookingId: string, _p: ActionResult, form: FormData): Promise<ActionResult> {
   const me = await requireAdmin();
   const reason = z.string().trim().max(500).safeParse(form.get("reason") ?? "");
   if (!id.safeParse(bookingId).success || !reason.success) return { error: "Dati non validi." };
-  return guard(async () => {
+  const r = await guard(async () => {
     await rejectBooking(bookingId, me.id, reason.data || null);
     await audit("booking.rejected", { userId: me.id, entity: "booking", entityId: bookingId });
   });
+  return r.ok ? { ...r, emailed: await emailsOn() } : r;
 }
 
 export async function cancelBookingAction(bookingId: string, notify: boolean): Promise<ActionResult> {
@@ -79,8 +98,8 @@ export async function cancelBookingAction(bookingId: string, notify: boolean): P
   });
 }
 
-export async function checkoutAction(bookingId: string, _p: ActionResult, form: FormData): Promise<ActionResult> {
-  await requireAdmin();
+export async function checkoutAction(bookingId: string, _p: ActionResult, form: FormData): Promise<ActionResult & { cargos?: string }> {
+  const me = await requireAdmin();
   const parsed = z
     .object({
       kmOut: z.union([z.literal(""), z.coerce.number().int().min(0).max(5_000_000)]),
@@ -98,6 +117,15 @@ export async function checkoutAction(bookingId: string, _p: ActionResult, form: 
         updatedAt: Date.now(),
       })
       .where(eq(schema.bookings.id, bookingId));
+  }).then(async (res) => {
+    if (!res.ok) return res;
+    // Alla consegna, se attivo, i dati partono da soli verso CaRGOS. Un errore non blocca la consegna.
+    const { cargosConfigured, sendBookingToCargos } = await import("@/lib/cargos");
+    const s = await getSettings();
+    if (s.cargosAutoSend !== "1" || !(await cargosConfigured())) return res;
+    const r = await sendBookingToCargos(bookingId, me.name || me.email);
+    refresh();
+    return { ...res, cargos: r.ok ? "Dati inviati a CaRGOS." : `CaRGOS: ${r.error}` };
   });
 }
 
@@ -252,4 +280,17 @@ export async function setCargosSentAction(bookingId: string, sent: boolean): Pro
     await db.update(schema.bookings).set({ cargosSentAt: sent ? Date.now() : null, updatedAt: Date.now() }).where(eq(schema.bookings.id, bookingId));
     await audit(sent ? "cargos.sent" : "cargos.unsent", { userId: me.id, entity: "booking", entityId: bookingId });
   });
+}
+
+/** Invio automatico a CaRGOS (Polizia di Stato). */
+export async function sendCargosAction(bookingId: string): Promise<ActionResult & { missing?: string[]; transactionId?: string | null }> {
+  const me = await requireAdmin();
+  if (!id.safeParse(bookingId).success) return { error: "Dati non validi." };
+  const { rateLimit } = await import("@/lib/security/rate-limit");
+  if (!(await rateLimit(`cargos:${me.id}`, 30, 10 * 60_000))) return { error: "Troppi tentativi, riprova tra qualche minuto." };
+  const { sendBookingToCargos } = await import("@/lib/cargos");
+  const r = await sendBookingToCargos(bookingId, me.name || me.email);
+  await audit(r.ok ? "cargos.sent_auto" : "cargos.send_failed", { userId: me.id, entity: "booking", entityId: bookingId, meta: r.ok ? { tx: r.transactionId } : { error: r.error } });
+  refresh();
+  return r.ok ? { ok: true, transactionId: r.transactionId } : { error: r.error, missing: r.missing };
 }

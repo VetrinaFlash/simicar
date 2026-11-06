@@ -10,11 +10,14 @@ import {
   moveBookingFormAction,
   rejectBookingAction,
   returnAction,
+  sendCargosAction,
   setCargosSentAction,
+  setPaymentTypeAction,
   updateBookingDetailsAction,
   type ActionResult,
 } from "@/app/admin/actions/bookings";
-import { Button, Checkbox, Field, FormError, Input, Select, Textarea } from "@/components/ui";
+import { Button, Checkbox, Field, FormError, Input, Select, Textarea, cx } from "@/components/ui";
+import { CARGOS_PAYMENT_TYPES } from "@/lib/cargos-tables";
 
 const euro = (n: number | null | undefined) => (n == null ? "" : String(n));
 
@@ -42,7 +45,13 @@ export function DecisionPanel({
         className={`flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${cState.ok ? "bg-go-soft text-go" : "bg-concrete-2 text-ink-2"}`}
       >
         {cState.ok ? <Check className="size-4" /> : <X className="size-4" />}
-        {cState.ok ? "Confermata. Il cliente ha ricevuto l'email." : "Rifiutata. Il cliente è stato avvisato."}
+        {cState.ok
+          ? cState.emailed
+            ? "Confermata. Il cliente ha ricevuto l'email."
+            : "Confermata. Le email non sono ancora attive: avvisa il cliente al telefono."
+          : rState.emailed
+            ? "Rifiutata. Il cliente è stato avvisato via email."
+            : "Rifiutata. Le email non sono ancora attive: avvisa il cliente al telefono."}
       </motion.p>
     );
 
@@ -79,7 +88,7 @@ export function DecisionPanel({
             <FormError message={cState.error} />
             <div className="flex gap-2">
               <Button type="submit" variant="success" className="flex-1" disabled={confirming}>
-                {confirming ? "Conferma in corso…" : "Conferma e invia email"}
+                {confirming ? "Conferma in corso…" : "Conferma la prenotazione"}
               </Button>
               <Button type="button" variant="ghost" onClick={() => setMode(compact ? "idle" : "reject")}>
                 {compact ? "Indietro" : "Rifiuta"}
@@ -102,7 +111,7 @@ export function DecisionPanel({
             <FormError message={rState.error} />
             <div className="flex gap-2">
               <Button type="submit" variant="danger" className="flex-1" disabled={rejecting}>
-                {rejecting ? "Invio…" : "Rifiuta e avvisa il cliente"}
+                {rejecting ? "Invio…" : "Rifiuta la richiesta"}
               </Button>
               <Button type="button" variant="ghost" onClick={() => setMode(compact ? "idle" : "confirm")}>
                 Indietro
@@ -139,7 +148,7 @@ export function HandoverForms({
   fuelOut: number | null;
   mileage: number | null;
 }) {
-  const [out, outAction, outPending] = useActionState<ActionResult, FormData>(checkoutAction.bind(null, bookingId), {});
+  const [out, outAction, outPending] = useActionState<ActionResult & { cargos?: string }, FormData>(checkoutAction.bind(null, bookingId), {});
   const [ret, retAction, retPending] = useActionState<ActionResult, FormData>(returnAction.bind(null, bookingId), {});
   return (
     <div className="grid gap-5 sm:grid-cols-2">
@@ -154,8 +163,9 @@ export function HandoverForms({
           </Field>
         </div>
         <FormError message={out.error} />
+        {out.cargos && <p className="rounded-xl bg-concrete px-3 py-2 text-sm font-medium text-ink-2">{out.cargos}</p>}
         <Button type="submit" variant="secondary" className="w-full" disabled={outPending}>
-          {out.ok ? "Consegna registrata" : "Registra consegna"}
+          {outPending ? "Registrazione…" : out.ok ? "Consegna registrata" : "Registra consegna"}
         </Button>
       </form>
       <form action={retAction} className="space-y-3">
@@ -291,32 +301,136 @@ export function CancelBooking({ bookingId, canNotify }: { bookingId: string; can
   );
 }
 
-export function DocumentsPanel({ bookingId, cargosSentAt }: { bookingId: string; cargosSentAt: number | null }) {
+export function DocumentsPanel({
+  bookingId,
+  customerId,
+  cargos,
+}: {
+  bookingId: string;
+  customerId: string | null;
+  cargos: {
+    configured: boolean;
+    sentAt: number | null;
+    transactionId: string | null;
+    error: string | null;
+    missing: string[];
+    paymentType: string;
+  };
+}) {
   const [pending, start] = useTransition();
-  const [sent, setSent] = useState(cargosSentAt);
+  const [sent, setSent] = useState(cargos.sentAt);
+  const [msg, setMsg] = useState<{ tone: "ok" | "err"; text: string; missing?: string[] } | null>(null);
+  const [pay, setPay] = useState(cargos.paymentType);
+  const done = !!sent;
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <div className="grid grid-cols-2 gap-2">
-        <a href={`/api/admin/bookings/${bookingId}/pdf?tipo=contratto`} target="_blank" rel="noopener" className="flex h-11 items-center justify-center gap-2 rounded-xl bg-paper text-[15px] font-semibold ring-1 ring-line hover:ring-ink-3">
+        <a href={`/api/admin/bookings/${bookingId}/pdf?tipo=contratto`} target="_blank" rel="noopener" className="flex h-11 items-center justify-center gap-2 rounded-xl bg-paper text-[15px] font-semibold ring-1 ring-line transition-shadow hover:ring-ink-3">
           <FileText className="size-4" /> Contratto PDF
         </a>
-        <a href={`/api/admin/bookings/${bookingId}/pdf?tipo=cargos`} target="_blank" rel="noopener" className="flex h-11 items-center justify-center gap-2 rounded-xl bg-paper text-[15px] font-semibold ring-1 ring-line hover:ring-ink-3">
+        <a href={`/api/admin/bookings/${bookingId}/pdf?tipo=cargos`} target="_blank" rel="noopener" className="flex h-11 items-center justify-center gap-2 rounded-xl bg-paper text-[15px] font-semibold ring-1 ring-line transition-shadow hover:ring-ink-3">
           <ShieldCheck className="size-4" /> Scheda CaRGOS
         </a>
       </div>
-      <Checkbox
-        checked={!!sent}
-        disabled={pending}
-        onChange={(e) => {
-          const v = e.target.checked;
-          setSent(v ? Date.now() : null);
-          start(async () => {
-            const r = await setCargosSentAction(bookingId, v);
-            if (r.error) setSent(cargosSentAt);
-          });
-        }}
-        label={sent ? `Dati inviati a CaRGOS (${new Date(sent).toLocaleDateString("it-IT")})` : "Segna come inviato a CaRGOS"}
-      />
+
+      <div className={cx("rounded-2xl p-4 ring-1", done ? "bg-go-soft ring-go/25" : "bg-concrete ring-line")}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="font-bold">Comunicazione alla Polizia (CaRGOS)</p>
+            <p className="mt-0.5 text-sm text-ink-2">
+              {done
+                ? `Inviata il ${new Date(sent!).toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" })}${cargos.transactionId ? ` · ricevuta ${cargos.transactionId}` : ""}`
+                : cargos.configured
+                  ? "Parte da sola alla consegna del mezzo, oppure inviala ora."
+                  : "Invio automatico non ancora attivo: usa la scheda PDF sul portale CaRGOS."}
+            </p>
+          </div>
+          {done && <Check className="size-6 shrink-0 text-go" />}
+        </div>
+
+        {!done && (
+          <div className="mt-4 space-y-3">
+            <Field label="Metodo di pagamento">
+              <Select
+                value={pay}
+                onChange={(e) => {
+                  setPay(e.target.value);
+                  start(async () => void (await setPaymentTypeAction(bookingId, e.target.value)));
+                }}
+              >
+                {CARGOS_PAYMENT_TYPES.map((p) => (
+                  <option key={p.code} value={p.code}>{p.label}</option>
+                ))}
+              </Select>
+            </Field>
+            {cargos.missing.length > 0 && (
+              <div className="rounded-xl bg-signal-soft p-3 text-sm text-[#5f4600]">
+                <p className="font-bold">Mancano alcuni dati</p>
+                <ul className="mt-1 list-inside list-disc space-y-0.5">
+                  {cargos.missing.map((m) => <li key={m}>{m}</li>)}
+                </ul>
+                {customerId && (
+                  <a href={`/admin/clienti/${customerId}`} className="mt-2 inline-block font-semibold underline">Completa la scheda cliente</a>
+                )}
+              </div>
+            )}
+            {cargos.error && !msg && <p className="rounded-xl bg-stop-soft p-3 text-sm font-medium text-stop">Ultimo tentativo: {cargos.error}</p>}
+            {msg && (
+              <p className={cx("rounded-xl p-3 text-sm font-semibold", msg.tone === "ok" ? "bg-go-soft text-go" : "bg-stop-soft text-stop")} role="status">
+                {msg.text}
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-3">
+              {cargos.configured && (
+                <Button
+                  type="button"
+                  disabled={pending || cargos.missing.length > 0}
+                  onClick={() =>
+                    start(async () => {
+                      const r = await sendCargosAction(bookingId);
+                      if (r.ok) {
+                        setSent(Date.now());
+                        setMsg({ tone: "ok", text: "Inviata a CaRGOS." });
+                      } else setMsg({ tone: "err", text: r.error ?? "Invio non riuscito." });
+                    })
+                  }
+                >
+                  {pending ? "Invio in corso…" : "Invia ora a CaRGOS"}
+                </Button>
+              )}
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() =>
+                  start(async () => {
+                    const r = await setCargosSentAction(bookingId, true);
+                    if (!r.error) setSent(Date.now());
+                  })
+                }
+                className="text-sm font-semibold text-ink-2 underline-offset-2 hover:underline"
+              >
+                L&apos;ho inviata dal portale
+              </button>
+            </div>
+          </div>
+        )}
+        {done && !cargos.transactionId && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              start(async () => {
+                const r = await setCargosSentAction(bookingId, false);
+                if (!r.error) setSent(null);
+              })
+            }
+            className="mt-3 text-sm font-semibold text-ink-2 underline-offset-2 hover:underline"
+          >
+            Annulla la spunta
+          </button>
+        )}
+      </div>
     </div>
   );
 }

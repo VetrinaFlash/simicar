@@ -27,4 +27,5 @@
   }
   // Segreti (npx wrangler secret put NOME):
   //   RESEND_API_KEY, TURNSTILE_SECRET_KEY, CRON_SECRET, ADMIN_SETUP_TOKEN, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, IP_HASH_SALT
+  //   CARGOS_USERNAME, CARGOS_PASSWORD, CARGOS_API_KEY (facoltativi: invio automatico alla Polizia)
 }

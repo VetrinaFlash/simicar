@@ -108,7 +108,22 @@ export const vehicleSchema = z.object({
   serviceDueKm: optInt(0, 5_000_000),
 });
 
+const optCode = z
+  .union([z.literal(""), z.coerce.number().int().min(100_000_000).max(999_999_999)])
+  .optional()
+  .transform((v) => (v === "" || v === undefined ? null : v));
+
 export const customerSchema = z.object({
+  birthPlaceCode: optCode,
+  citizenshipCode: optCode,
+  residenceCode: optCode,
+  residenceName: optional(80),
+  docTypeCode: z
+    .enum(["IDENT", "IDELE", "PATEN", "PASOR", "PASSE", "PASDI", "CIDIP", ""])
+    .optional()
+    .transform((v) => (v ? v : null)),
+  docIssuedCode: optCode,
+  licenseIssuedCode: optCode,
   firstName: trimmed(60).min(1, "Inserisci il nome"),
   lastName: trimmed(60).min(1, "Inserisci il cognome"),
   email: z

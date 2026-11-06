@@ -19,6 +19,12 @@ export const DEFAULT_SETTINGS = {
   mapsUrl: "",
   heroTitle: "Auto e furgoni a noleggio, quando ti servono.",
   heroText: "Scegli il mezzo e le date: ti confermiamo la disponibilità per email, di solito in giornata.",
+  // CaRGOS
+  cargosAgencyId: "",
+  cargosAgencyPlaceCode: "",
+  cargosAgencyPlaceName: "",
+  cargosPaymentType: "0",
+  cargosAutoSend: "1",
 };
 
 export type Settings = typeof DEFAULT_SETTINGS;

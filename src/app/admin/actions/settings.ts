@@ -37,6 +37,14 @@ const settingsSchema = z.object({
     .refine((v) => v === "" || /^https:\/\//.test(v), "Il link a Maps deve iniziare con https://"),
   heroTitle: s(120).min(1, "Inserisci il titolo"),
   heroText: s(300),
+  cargosAgencyId: s(30),
+  cargosAgencyPlaceCode: z.string().trim().regex(/^(\d{9})?$/, "Scegli il comune della sede dall'elenco"),
+  cargosAgencyPlaceName: s(80),
+  cargosPaymentType: z.enum(["0", "1", "2", "3", "4", "9"]),
+  cargosAutoSend: z
+    .string()
+    .optional()
+    .transform((v) => (v === "on" ? "1" : "0")),
 });
 
 export type SettingsState = { error?: string; ok?: boolean };

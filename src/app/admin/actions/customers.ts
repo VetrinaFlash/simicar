@@ -7,7 +7,10 @@ import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
 import { newId } from "@/lib/security/crypto";
+import { CARGOS_DOC_TYPES } from "@/lib/cargos-tables";
 import { customerSchema, firstError } from "@/lib/validation";
+
+const docLabel = (code: string | null) => CARGOS_DOC_TYPES.find((d) => d.code === code)?.label ?? null;
 
 export type CustomerFormState = { error?: string; ok?: boolean };
 
@@ -17,7 +20,7 @@ export async function createCustomerAction(_p: CustomerFormState, form: FormData
   if (!parsed.success) return { error: firstError(parsed.error) };
   const db = await getDb();
   const id = newId();
-  await db.insert(schema.customers).values({ id, ...parsed.data });
+  await db.insert(schema.customers).values({ id, ...parsed.data, docType: docLabel(parsed.data.docTypeCode) });
   await audit("customer.created", { userId: me.id, entity: "customer", entityId: id });
   redirect(`/admin/clienti/${id}`);
 }
@@ -27,7 +30,7 @@ export async function updateCustomerAction(id: string, _p: CustomerFormState, fo
   const parsed = customerSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: firstError(parsed.error) };
   const db = await getDb();
-  await db.update(schema.customers).set({ ...parsed.data, updatedAt: Date.now() }).where(eq(schema.customers.id, id));
+  await db.update(schema.customers).set({ ...parsed.data, docType: docLabel(parsed.data.docTypeCode), updatedAt: Date.now() }).where(eq(schema.customers.id, id));
   await audit("customer.updated", { userId: me.id, entity: "customer", entityId: id });
   revalidatePath(`/admin/clienti/${id}`);
   return { ok: true };
@@ -53,6 +56,16 @@ export async function anonymizeCustomerAction(id: string) {
       docType: null,
       docNumber: null,
       docExpiry: null,
+      docIssuedBy: null,
+      licenseIssuedBy: null,
+      citizenship: null,
+      birthPlaceCode: null,
+      citizenshipCode: null,
+      residenceCode: null,
+      residenceName: null,
+      docTypeCode: null,
+      docIssuedCode: null,
+      licenseIssuedCode: null,
       notes: null,
       blacklistReason: null,
       updatedAt: Date.now(),

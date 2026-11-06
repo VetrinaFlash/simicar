@@ -3,10 +3,12 @@
 import { useActionState } from "react";
 import { changePasswordAction, type PasswordState } from "@/app/admin/actions/auth";
 import { saveSettingsAction, type SettingsState } from "@/app/admin/actions/settings";
-import { Button, Field, FormError, Input, Panel, PanelHeader, Textarea } from "@/components/ui";
+import { PlacePicker } from "@/components/place-picker";
+import { Button, Checkbox, Field, FormError, Input, Panel, PanelHeader, Select, Textarea } from "@/components/ui";
+import { CARGOS_PAYMENT_TYPES } from "@/lib/cargos-tables";
 import type { Settings } from "@/lib/settings";
 
-export function SettingsForm({ settings: s }: { settings: Settings }) {
+export function SettingsForm({ settings: s, cargosConfigured }: { settings: Settings; cargosConfigured: boolean }) {
   const [state, action, pending] = useActionState<SettingsState, FormData>(saveSettingsAction, {});
   return (
     <form action={action} className="space-y-5">
@@ -31,6 +33,34 @@ export function SettingsForm({ settings: s }: { settings: Settings }) {
           <Field label="Ritiri dalle"><Input name="openFrom" type="time" defaultValue={s.openFrom} required /></Field>
           <Field label="Riconsegne fino alle"><Input name="openTo" type="time" defaultValue={s.openTo} required /></Field>
           <Field label="Preavviso minimo (ore)"><Input name="minNoticeHours" type="number" min={0} max={240} defaultValue={s.minNoticeHours} /></Field>
+        </div>
+      </Panel>
+      <Panel>
+        <PanelHeader
+          title="CaRGOS · Polizia di Stato"
+          sub={
+            cargosConfigured
+              ? "Credenziali collegate: i contratti partono da soli alla consegna del mezzo."
+              : "Credenziali non ancora collegate: puoi comunque usare la scheda PDF. Quando la Questura te le rilascia, inseriscile tra i segreti del server (CARGOS_USERNAME, CARGOS_PASSWORD, CARGOS_API_KEY)."
+          }
+        />
+        <div className="grid gap-4 px-5 pb-5 sm:grid-cols-2">
+          <Field label="Codice agenzia" hint="L'identificativo della tua agenzia su CaRGOS">
+            <Input name="cargosAgencyId" defaultValue={s.cargosAgencyId} maxLength={30} />
+          </Field>
+          <Field label="Comune della sede">
+            <PlacePicker codeName="cargosAgencyPlaceCode" textName="cargosAgencyPlaceName" kind="comune" defaultCode={Number(s.cargosAgencyPlaceCode) || null} defaultText={s.cargosAgencyPlaceName} />
+          </Field>
+          <Field label="Pagamento più usato" hint="Puoi cambiarlo su ogni prenotazione">
+            <Select name="cargosPaymentType" defaultValue={s.cargosPaymentType}>
+              {CARGOS_PAYMENT_TYPES.map((p) => (
+                <option key={p.code} value={p.code}>{p.label}</option>
+              ))}
+            </Select>
+          </Field>
+          <div className="flex items-end pb-2.5">
+            <Checkbox name="cargosAutoSend" defaultChecked={s.cargosAutoSend === "1"} label="Invia in automatico alla consegna del mezzo" />
+          </div>
         </div>
       </Panel>
       <Panel>

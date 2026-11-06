@@ -18,6 +18,9 @@ declare global {
     IP_HASH_SALT?: string;
     CRON_SECRET?: string;
     ADMIN_SETUP_TOKEN?: string;
+    CARGOS_USERNAME?: string;
+    CARGOS_PASSWORD?: string;
+    CARGOS_API_KEY?: string;
   }
 }
 export {};

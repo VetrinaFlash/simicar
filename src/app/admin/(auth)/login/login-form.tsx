@@ -16,7 +16,7 @@ export function LoginForm({ next, configured }: { next?: string; configured: boo
         <Field label="Password">
           <Input name="password" type="password" autoComplete="current-password" required />
         </Field>
-        <FormError message={configured ? state.error : "Accesso non ancora configurato. Contatta il gestore."} />
+        <FormError message={configured ? state.error : "Il Secret ADMIN_PASSWORD non è disponibile nel Worker. Aggiungilo in Cloudflare → Workers & Pages → simicar → Settings → Variables and Secrets (non nelle sole impostazioni di build), quindi pubblica una nuova versione."} />
         <Button type="submit" className="w-full" disabled={pending || !configured}>
           {pending ? "Accesso in corso…" : "Accedi"}
         </Button>

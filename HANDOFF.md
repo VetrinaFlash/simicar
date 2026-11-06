@@ -9,9 +9,10 @@ Lingua dell'interfaccia: italiano. Non usare mai `any` e non indebolire i contro
 - Sito pubblico completo: hero, flotta filtrabile, scheda veicolo con calendario disponibilità, richiesta, privacy.
 - Pannello completo: Oggi, Calendario timeline con drag, Richieste, Prenotazioni, Flotta con foto, Clienti, Impostazioni, Notifiche.
 - Email Resend, push, cron giornaliero, dati demo, attivazione primo accesso.
+- PDF contratto e scheda CaRGOS (`/api/admin/bookings/[id]/pdf?tipo=contratto|cargos`, pdf-lib), spunta "inviato a CaRGOS", avviso in dashboard.
 
 ## Da fare
-1. **PDF contratto + scheda CaRGOS** (richiesto dal cliente): route `GET /api/admin/bookings/[id]/pdf?tipo=contratto|cargos` con `pdf-lib`, solo admin. Pulsanti nel dettaglio prenotazione, più "Segna come inviato a CaRGOS" (campo `bookings.cargos_sent_at` già presente). Sulla dashboard: avviso per le prenotazioni confermate che iniziano entro 48 ore senza invio CaRGOS.
+1. Firma del contratto su tablet (canvas) salvata su R2 e inserita nel PDF; foto dei danni al check-in e al check-out.
 2. **Invio automatico CaRGOS** (gratuito, ma servono username, password e API key rilasciati dalla Questura al noleggiatore): API REST della Polizia. Riferimento non ufficiale per il tracciato: pacchetto PyPI `cargos-api`. Va proposto al cliente prima di implementarlo.
 3. **Multisede**: tabella `locations` e campi `vehicles.location_id`, `bookings.pickup_location_id/return_location_id` già nello schema. Mancano la gestione delle sedi in Impostazioni, la sede nel form veicolo, la scelta della sede nel widget pubblico (solo se più di 1 sede attiva), gli orari per sede e la sezione "Dove siamo" con più sedi.
 4. Quando arrivano i dati reali: nome, indirizzo, telefono, P.IVA (dal pannello Impostazioni), foto reali dei mezzi, eliminazione dei dati demo.

@@ -15,7 +15,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const { da, giorno } = await searchParams;
   const today = todayRome();
   const start = da && /^\d{4}-\d{2}-\d{2}$/.test(da) ? da : addDays(today, -3);
-  const selectedDay = giorno && /^\\d{4}-\\d{2}-\\d{2}$/.test(giorno) && diffDays(start, giorno) >= 0 && diffDays(start, giorno) < DAYS
+  const selectedDay = giorno && /^\d{4}-\d{2}-\d{2}$/.test(giorno) && diffDays(start, giorno) >= 0 && diffDays(start, giorno) < DAYS
     ? giorno
     : today && diffDays(start, today) >= 0 && diffDays(start, today) < DAYS ? today : start;
   const from = romeToUtc(start);

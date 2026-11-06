@@ -41,7 +41,7 @@ Next.js 16 + Cloudflare Workers (OpenNext), database D1, foto su R2, email con R
 2. **Segreti**: Worker `simicar` → Settings → Variables and Secrets. Aggiungi, come *Secret*:
    | Nome | Valore |
    |---|---|
-   | `ADMIN_SETUP_TOKEN` | codice lungo e casuale, serve una sola volta per creare il titolare |
+   | `ADMIN_PASSWORD` | password fissa del pannello, impostata solo come Cloudflare Secret |
    | `CRON_SECRET` | stringa casuale |
    | `IP_HASH_SALT` | stringa casuale |
    | `RESEND_API_KEY` | da resend.com |
@@ -51,7 +51,7 @@ Next.js 16 + Cloudflare Workers (OpenNext), database D1, foto su R2, email con R
    Se usi Turnstile, metti la chiave pubblica in `NEXT_PUBLIC_TURNSTILE_SITE_KEY` dentro `wrangler.jsonc`.
 3. **Dominio**: Worker → Settings → Domains & Routes → aggiungi `simicar.it` e `www.simicar.it` (il dominio deve essere su Cloudflare DNS).
 4. **Email**: su Resend aggiungi il dominio `simicar.it` e inserisci i record DNS che ti indica. Il mittente è in `RESEND_FROM` dentro `wrangler.jsonc`.
-5. **Primo accesso**: apri `https://simicar.it/admin`. Ti porta su *Attiva il pannello*: inserisci `ADMIN_SETUP_TOKEN`, nome, email e password. Questa pagina funziona solo finché non esiste nessun utente.
+5. **Primo accesso**: apri `/admin/login` sull’indirizzo `*.workers.dev` assegnato al Worker (o sul dominio personalizzato quando sarà configurato). Username: `M4nh4tt4n`. Password: valore del secret Cloudflare `ADMIN_PASSWORD`. Il primo login crea automaticamente l’account in D1. La pagina `/admin/setup` è disabilitata e la password non viene salvata nel codice. **Usare la stessa stringa per username e password è debole: modificare `ADMIN_PASSWORD` prima dell’uso reale con dati dei clienti.**
 6. **Impostazioni**: dal pannello inserisci nome, indirizzo, telefono, WhatsApp, email e orari. Attiva le notifiche su ogni telefono (su iPhone prima "Aggiungi alla schermata Home").
 7. **Dati demo**: quando il cliente inizia a lavorare davvero, vai su Impostazioni → *Rimuovi dati demo*.
 
@@ -69,7 +69,7 @@ cp .dev.vars.example .dev.vars
 npm run db:migrate:local
 npm run preview            # build OpenNext + wrangler dev su http://localhost:8787
 ```
-Il codice di attivazione locale è in `.dev.vars` (`ADMIN_SETUP_TOKEN`).
+Per l’accesso admin in locale valorizza `ADMIN_PASSWORD` in `.dev.vars` (il file non va caricato su GitHub).
 
 ## Struttura
 - `src/app/(site)` sito pubblico · `src/app/admin` pannello · `src/app/api` API

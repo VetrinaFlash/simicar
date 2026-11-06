@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import { moveBookingAction } from "@/app/admin/actions/bookings";
+import { MobileAgenda } from "./mobile-agenda";
 import { LinkButton, cx } from "@/components/ui";
 import { addDays, diffDays, fmtDateTime, romeToUtc, toRomeDate, toRomeTime } from "@/lib/time";
 
@@ -31,7 +32,7 @@ const BAR: Record<string, string> = {
 
 type Drag = { id: string; startX: number; startY: number; dx: number; dy: number; moved: boolean };
 
-export function Timeline({ start, days, today, vehicles, bookings: initial }: { start: string; days: number; today: string; vehicles: V[]; bookings: B[] }) {
+export function Timeline({ start, days, today, selectedDay, vehicles, bookings: initial }: { start: string; days: number; today: string; selectedDay: string; vehicles: V[]; bookings: B[] }) {
   const router = useRouter();
   const scroller = useRef<HTMLDivElement>(null);
   const [colW, setColW] = useState(72);
@@ -147,9 +148,9 @@ export function Timeline({ start, days, today, vehicles, bookings: initial }: { 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-wide text-[26px] font-extrabold tracking-tight md:text-[32px]">Calendario</h1>
-          <p className="text-[15px] capitalize text-ink-3">{monthLabel}</p>
+          <p className="hidden text-[15px] capitalize text-ink-3 md:block">{monthLabel}</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="hidden items-center gap-2 md:flex">
           <Link href={`/admin/calendario?da=${addDays(start, -14)}`} className="grid size-11 place-items-center rounded-xl bg-paper ring-1 ring-line hover:ring-ink-3" aria-label="Settimane precedenti">
             <ChevronLeft className="size-5" />
           </Link>
@@ -165,7 +166,7 @@ export function Timeline({ start, days, today, vehicles, bookings: initial }: { 
         </div>
       </div>
 
-      <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs font-semibold text-ink-2">
+      <div className="mb-3 hidden flex-wrap gap-x-4 gap-y-1.5 text-xs font-semibold text-ink-2 md:flex">
         <span className="flex items-center gap-1.5"><i className="size-3 rounded bg-signal" /> Da confermare</span>
         <span className="flex items-center gap-1.5"><i className="size-3 rounded bg-eu" /> Confermata</span>
         <span className="flex items-center gap-1.5"><i className="size-3 rounded bg-[#9fb0d6]" /> Conclusa</span>
@@ -179,7 +180,9 @@ export function Timeline({ start, days, today, vehicles, bookings: initial }: { 
           <LinkButton href="/admin/flotta/nuovo" className="mt-4">Aggiungi il primo veicolo</LinkButton>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl bg-paper ring-1 ring-line/70">
+        <>
+          <MobileAgenda start={start} days={days} today={today} selectedDay={selectedDay} vehicles={vehicles} bookings={bookings} />
+          <div className="hidden overflow-hidden rounded-2xl bg-paper ring-1 ring-line/70 md:block">
           <div ref={scroller} className="relative overflow-x-auto overscroll-x-contain" style={{ scrollbarWidth: "thin" }}>
             <div className="relative" style={{ width: days * colW + 168 }}>
               {/* Intestazione giorni */}
@@ -276,7 +279,8 @@ export function Timeline({ start, days, today, vehicles, bookings: initial }: { 
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </>
       )}
 
       <AnimatePresence>

@@ -13,6 +13,6 @@ Lingua dell'interfaccia: italiano. Non usare mai `any` e non indebolire i contro
 
 ## Da fare
 1. Firma del contratto su tablet (canvas) salvata su R2 e inserita nel PDF; foto dei danni al check-in e al check-out.
-2. **Invio automatico CaRGOS** (gratuito, ma servono username, password e API key rilasciati dalla Questura al noleggiatore): API REST della Polizia. Riferimento non ufficiale per il tracciato: pacchetto PyPI `cargos-api`. Va proposto al cliente prima di implementarlo.
+2. ~~Invio automatico CaRGOS~~ FATTO (`src/lib/cargos.ts`, tabella `cargos_places`, migrazione `0002_cargos.sql`). Da provare con credenziali reali: verificare il formato della risposta Token/Check/Send (gestiti sia `access_token` sia `token`).
 3. **Multisede**: tabella `locations` e campi `vehicles.location_id`, `bookings.pickup_location_id/return_location_id` già nello schema. Mancano la gestione delle sedi in Impostazioni, la sede nel form veicolo, la scelta della sede nel widget pubblico (solo se più di 1 sede attiva), gli orari per sede e la sezione "Dove siamo" con più sedi.
 4. Quando arrivano i dati reali: nome, indirizzo, telefono, P.IVA (dal pannello Impostazioni), foto reali dei mezzi, eliminazione dei dati demo.

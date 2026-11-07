@@ -17,7 +17,9 @@ Next.js 16 + Cloudflare Workers (OpenNext), database D1, foto su R2, email con R
 - Richieste: conferma o rifiuta con un tocco. Al cliente parte un'email automatica.
 - Prenotazioni: inserimento manuale (telefono, banco), blocchi per officina, consegna e rientro con km e carburante, cambio date o veicolo, annullamento.
 - Flotta: schede complete (targa, telaio, caratteristiche, cauzione, scadenze di assicurazione, revisione, bollo e tagliando) e foto scattate dal telefono.
-- Clienti: anagrafica, patente, documento (dati per CaRGOS), storico, lista nera, anonimizzazione GDPR.
+- Clienti: anagrafica, patente, documento (con i codici ufficiali dei luoghi della Polizia), storico, lista nera, anonimizzazione GDPR.
+- Documenti: contratto di noleggio in PDF e scheda dati CaRGOS in PDF.
+- **CaRGOS automatico**: alla consegna del mezzo il contratto parte da solo verso la Polizia di Stato, ed è possibile inviarlo anche a mano dal dettaglio della prenotazione. Il tracciato a 1505 caratteri e la cifratura AES del token sono stati verificati carattere per carattere con un'implementazione di riferimento. Se mancano dati, il pannello li elenca. Senza credenziali tutto funziona lo stesso, con la scheda PDF.
 - Notifiche push e promemoria giornaliero (cron alle 7:00).
 
 ## Sicurezza
@@ -42,6 +44,7 @@ Next.js 16 + Cloudflare Workers (OpenNext), database D1, foto su R2, email con R
    | Nome | Valore |
    |---|---|
    | `ADMIN_PASSWORD` | password fissa del pannello, impostata solo come Cloudflare Secret |
+   | `CARGOS_USERNAME`, `CARGOS_PASSWORD`, `CARGOS_API_KEY` | facoltativi: credenziali CaRGOS rilasciate dalla Questura (API key di 48 caratteri). Poi, in Impostazioni → CaRGOS, inserisci il codice agenzia e il comune della sede |
    | `CRON_SECRET` | stringa casuale |
    | `IP_HASH_SALT` | stringa casuale |
    | `RESEND_API_KEY` | da resend.com |

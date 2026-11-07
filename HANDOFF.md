@@ -11,8 +11,15 @@ Lingua dell'interfaccia: italiano. Non usare mai `any` e non indebolire i contro
 - Email Resend, push, cron giornaliero, dati demo, attivazione primo accesso.
 - PDF contratto e scheda CaRGOS (`/api/admin/bookings/[id]/pdf?tipo=contratto|cargos`, pdf-lib), spunta "inviato a CaRGOS", avviso in dashboard.
 
-## Da fare
-1. Firma del contratto su tablet (canvas) salvata su R2 e inserita nel PDF; foto dei danni al check-in e al check-out.
-2. ~~Invio automatico CaRGOS~~ FATTO (`src/lib/cargos.ts`, tabella `cargos_places`, migrazione `0002_cargos.sql`). Da provare con credenziali reali: verificare il formato della risposta Token/Check/Send (gestiti sia `access_token` sia `token`).
-3. **Multisede**: tabella `locations` e campi `vehicles.location_id`, `bookings.pickup_location_id/return_location_id` già nello schema. Mancano la gestione delle sedi in Impostazioni, la sede nel form veicolo, la scelta della sede nel widget pubblico (solo se più di 1 sede attiva), gli orari per sede e la sezione "Dove siamo" con più sedi.
-4. Quando arrivano i dati reali: nome, indirizzo, telefono, P.IVA (dal pannello Impostazioni), foto reali dei mezzi, eliminazione dei dati demo.
+## Da fare (solo quando arrivano i dati)
+1. Dati reali dal pannello Impostazioni: indirizzo, telefono, WhatsApp, email, P.IVA, orari, codice agenzia CaRGOS e comune della sede.
+2. Foto reali dei mezzi dal pannello Flotta, poi Impostazioni → "Rimuovi dati demo".
+3. Credenziali CaRGOS nei segreti del Worker (`CARGOS_USERNAME`, `CARGOS_PASSWORD`, `CARGOS_API_KEY`) e primo invio di prova.
+4. Resend: verifica del dominio simicar.it e segreto `RESEND_API_KEY`.
+5. Cambio nome da Manhattan a Similar: logo in `public/brand/`, nome in Impostazioni, `RESEND_FROM` in `wrangler.jsonc`.
+
+## Predisposto ma non attivo
+- Multisede: tabella `locations` e campi `vehicles.location_id`, `bookings.pickup_location_id/return_location_id`. Manca l'interfaccia (gestione sedi, scelta della sede nel sito e nel pannello).
+
+## Proposte scartate dal cliente (non implementare senza nuova richiesta)
+Firma su tablet, foto dei danni, gestione multe, statistiche avanzate.

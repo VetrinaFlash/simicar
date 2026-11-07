@@ -31,7 +31,7 @@ function layout(s: Settings, title: string, inner: string) {
 <body style="margin:0;background:#E9EBEE;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#151A22">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden">
-<tr><td style="background:#1A3FA0;padding:22px 28px;color:#fff;font-size:18px;font-weight:800;letter-spacing:-0.01em">${esc(s.businessName)}</td></tr>
+<tr><td style="background:#0a1f5c;padding:22px 28px;color:#fff;font-size:18px;font-weight:800;letter-spacing:-0.01em">${esc(s.businessName)}</td></tr>
 <tr><td style="padding:28px">${inner}</td></tr>
 <tr><td style="padding:18px 28px 26px;border-top:1px solid #E1E4E8;font-size:13px;line-height:1.6;color:#5A6270">${contacts}</td></tr>
 </table></td></tr></table></body></html>`;
@@ -89,7 +89,7 @@ export function bookingConfirmedMail(s: Settings, d: BookingMailData) {
       p(`Ciao ${esc(d.firstName)}, la tua prenotazione è confermata.`) +
       summary(d) +
       p("Al ritiro porta patente e documento d'identità in corso di validità.") +
-      (s.address ? p(`Ritiro presso: <strong>${esc(s.address)}</strong>${s.mapsUrl ? ` · <a href="${esc(s.mapsUrl)}" style="color:#1A3FA0">Apri in Maps</a>` : ""}`) : ""),
+      (s.address ? p(`Ritiro presso: <strong>${esc(s.address)}</strong>${s.mapsUrl ? ` · <a href="${esc(s.mapsUrl)}" style="color:#0a4a9c">Apri in Maps</a>` : ""}`) : ""),
   );
   return {
     subject,
@@ -142,7 +142,28 @@ export function adminNewRequestMail(s: Settings, d: BookingMailData & { customer
     h("Nuova richiesta dal sito") +
       p(`<strong>${esc(d.customer)}</strong>${d.phone ? ` · ${esc(d.phone)}` : ""}`) +
       summary(d) +
-      `<a href="${esc(d.url)}" style="display:inline-block;background:#1A3FA0;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700">Apri la richiesta</a>`,
+      `<a href="${esc(d.url)}" style="display:inline-block;background:#0a4a9c;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700">Apri la richiesta</a>`,
   );
   return { subject, html, text: `Nuova richiesta da ${d.customer}\n\n${textSummary(d)}\n\n${d.url}` };
+}
+
+export function adminSaleInquiryMail(
+  s: Settings,
+  d: { vehicleName: string; price: string; name: string; phone: string; email: string | null; message: string | null; url: string },
+) {
+  const subject = `Richiesta info vendita: ${d.vehicleName}`;
+  const html = layout(
+    s,
+    subject,
+    h("Qualcuno è interessato a un mezzo in vendita") +
+      p(`<strong>${esc(d.vehicleName)}</strong> · ${esc(d.price)}`) +
+      p(`<strong>${esc(d.name)}</strong><br>Tel. ${esc(d.phone)}${d.email ? `<br>${esc(d.email)}` : ""}`) +
+      (d.message ? p(`<em>${esc(d.message)}</em>`) : "") +
+      `<a href="${esc(d.url)}" style="display:inline-block;background:#0a4a9c;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700">Apri le vendite</a>`,
+  );
+  return {
+    subject,
+    html,
+    text: `Richiesta informazioni per ${d.vehicleName} (${d.price})\n${d.name} - ${d.phone}${d.email ? ` - ${d.email}` : ""}\n${d.message ?? ""}\n\n${d.url}`,
+  };
 }

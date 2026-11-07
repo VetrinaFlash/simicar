@@ -73,6 +73,12 @@ export default async function FleetPage() {
                     {current ? <Badge tone="warn">Fuori fino al {fmtDate(current.endAt)}</Badge> : null}
                     {v.status !== "available" && <Badge tone={v.status === "maintenance" ? "danger" : "neutral"}>{STATUS_LABELS[v.status]}</Badge>}
                     {!v.isPublic && v.status !== "inactive" && <Badge>Nascosto dal sito</Badge>}
+                    {v.soldAt ? <Badge tone="ok">Venduto</Badge> : v.listing !== "rental" && (
+                      <span className="inline-flex h-6 items-center rounded-full bg-red px-2.5 text-xs font-bold text-white">
+                        {v.listing === "sale" ? "In vendita" : "Anche in vendita"}
+                        {v.salePriceEur != null ? ` · € ${v.salePriceEur.toLocaleString("it-IT")}` : ""}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="p-4">

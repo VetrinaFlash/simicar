@@ -66,14 +66,16 @@ export default async function DashboardPage() {
         ),
       ),
   ]);
+  // Conteggi di noleggio solo sui mezzi a noleggio (i mezzi solo in vendita restano fuori)
+  const rentalFleet = vehicles.filter((v) => v.listing !== "sale");
   const revenue = monthRows.filter((r) => r.startAt >= mFrom).reduce((sum, r) => sum + (r.priceEur ?? 0), 0);
   const busyMs = monthRows.reduce((sum, r) => sum + Math.max(0, Math.min(r.endAt, mTo) - Math.max(r.startAt, mFrom)), 0);
-  const occupancy = vehicles.length ? Math.round((busyMs / ((mTo - mFrom) * vehicles.length)) * 100) : 0;
+  const occupancy = rentalFleet.length ? Math.round((busyMs / ((mTo - mFrom) * rentalFleet.length)) * 100) : 0;
   const monthName = new Intl.DateTimeFormat("it-IT", { month: "long", timeZone: "Europe/Rome" }).format(now);
 
-  const maintenance = vehicles.filter((v) => v.status === "maintenance").length;
+  const maintenance = rentalFleet.filter((v) => v.status === "maintenance").length;
   const outNow = out?.n ?? 0;
-  const free = Math.max(0, vehicles.length - outNow - maintenance);
+  const free = Math.max(0, rentalFleet.length - outNow - maintenance);
   const expiring = vehicles.flatMap((v) => expiringItems(v).map((i) => ({ ...i, v }))).sort((a, b) => a.daysLeft - b.daysLeft);
 
   const Row = ({ r, at, icon }: { r: (typeof pickups)[number]; at: number; icon: "out" | "in" }) => (

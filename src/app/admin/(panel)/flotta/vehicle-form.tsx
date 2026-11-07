@@ -52,6 +52,9 @@ export function VehicleForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   const [type, setType] = useState<"auto" | "furgone">(vehicle?.type ?? "auto");
+  const [listing, setListing] = useState<"rental" | "sale" | "both">(vehicle?.listing ?? "rental");
+  const rents = listing !== "sale";
+  const sells = listing !== "rental";
   const [saved, setSaved] = useState(false);
   useEffect(() => {
     if (state.ok) {
@@ -65,6 +68,57 @@ export function VehicleForm({
 
   return (
     <form action={formAction} className="space-y-5">
+      <Panel>
+        <PanelHeader title="Destinazione" sub="Decidi se il mezzo è a noleggio, in vendita o tutte e due le cose." />
+        <div className="grid gap-4 px-5 pb-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="sm:col-span-2 lg:col-span-4">
+            <Segmented
+              name="listing"
+              value={listing}
+              onChange={setListing}
+              options={[
+                { value: "rental", label: "Noleggio" },
+                { value: "sale", label: "Vendita" },
+                { value: "both", label: "Noleggio e vendita" },
+              ]}
+            />
+          </div>
+          <Field label="Stato">
+            <Select name="status" defaultValue={v?.status ?? "available"}>
+              <option value="available">{sells && !rents ? "In vetrina" : "Disponibile"}</option>
+              <option value="maintenance">In officina</option>
+              <option value="inactive">Non attivo</option>
+            </Select>
+          </Field>
+          <div className="flex items-end pb-2.5 sm:col-span-1 lg:col-span-3">
+            <Checkbox
+              name="isPublic"
+              defaultChecked={v?.isPublic ?? true}
+              label={rents ? "Mostra sul sito e accetta richieste online" : "Mostra sul sito nella sezione In vendita"}
+            />
+          </div>
+        </div>
+      </Panel>
+
+      <Panel className={cx(!sells && "hidden")}>
+        <PanelHeader title="Vendita" sub="Compare nella scheda «In vendita» sul sito." />
+        <div className="grid gap-4 px-5 pb-5 sm:grid-cols-3">
+          <Field label="Prezzo di vendita (€)" hint="Se vuoto, sul sito compare «Prezzo su richiesta»">
+            <Input name="salePriceEur" type="number" inputMode="numeric" min={0} defaultValue={n(v?.salePriceEur)} />
+          </Field>
+          <Field label="Condizione">
+            <Select name="saleCondition" defaultValue={v?.saleCondition ?? "usato"}>
+              <option value="usato">Usato</option>
+              <option value="km0">Km 0</option>
+              <option value="nuovo">Nuovo</option>
+            </Select>
+          </Field>
+          <Field label="Prima immatricolazione">
+            <Input name="registrationDate" type="month" defaultValue={v?.registrationDate ?? ""} />
+          </Field>
+        </div>
+      </Panel>
+
       <Panel>
         <PanelHeader title="Il veicolo" />
         <div className="grid gap-4 px-5 pb-5 sm:grid-cols-2">
@@ -159,7 +213,7 @@ export function VehicleForm({
         </div>
       </Panel>
 
-      <Panel>
+      <Panel className={cx(!rents && "hidden")}>
         <PanelHeader title="Condizioni di noleggio" />
         <div className="grid gap-4 px-5 pb-5 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Patente richiesta">
@@ -180,16 +234,6 @@ export function VehicleForm({
           <Field label="Prezzo «da» (€/giorno)" hint="Facoltativo. Se vuoto, sul sito non compare.">
             <Input name="priceFromEur" type="number" inputMode="numeric" min={0} defaultValue={n(v?.priceFromEur)} />
           </Field>
-          <Field label="Stato">
-            <Select name="status" defaultValue={v?.status ?? "available"}>
-              <option value="available">Disponibile</option>
-              <option value="maintenance">In officina</option>
-              <option value="inactive">Non attivo</option>
-            </Select>
-          </Field>
-          <div className="flex items-end pb-2.5 sm:col-span-1 lg:col-span-3">
-            <Checkbox name="isPublic" defaultChecked={v?.isPublic ?? true} label="Mostra sul sito e accetta richieste online" />
-          </div>
         </div>
       </Panel>
 

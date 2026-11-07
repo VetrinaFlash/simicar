@@ -50,6 +50,8 @@ export const locations = sqliteTable("locations", {
 
 export type VehicleType = "auto" | "furgone";
 export type VehicleStatus = "available" | "maintenance" | "inactive";
+/** Destinazione del mezzo: solo noleggio, solo vendita, o entrambi. */
+export type VehicleListing = "rental" | "sale" | "both";
 
 export const vehicles = sqliteTable(
   "vehicles",
@@ -81,6 +83,11 @@ export const vehicles = sqliteTable(
     features: text("features", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
     description: text("description"),
     status: text("status").$type<VehicleStatus>().notNull().default("available"),
+    listing: text("listing").$type<VehicleListing>().notNull().default("rental"),
+    salePriceEur: integer("sale_price_eur"),
+    saleCondition: text("sale_condition"), // nuovo, km0, usato
+    registrationDate: text("registration_date"), // yyyy-mm (immatricolazione)
+    soldAt: integer("sold_at"),
     isPublic: integer("is_public", { mode: "boolean" }).notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(0),
     // Scadenze (date ISO yyyy-mm-dd)
@@ -268,4 +275,26 @@ export const cargosPlaces = sqliteTable(
     kind: text("kind").$type<"comune" | "stato">().notNull(),
   },
   (t) => [index("cargos_places_name_idx").on(t.name)],
+);
+
+/* ───────────── Vendita: richieste di informazioni ───────────── */
+
+export type InquiryStatus = "new" | "contacted" | "closed";
+
+export const saleInquiries = sqliteTable(
+  "sale_inquiries",
+  {
+    id: text("id").primaryKey(),
+    vehicleId: text("vehicle_id")
+      .notNull()
+      .references(() => vehicles.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    email: text("email"),
+    phone: text("phone").notNull(),
+    message: text("message"),
+    status: text("status").$type<InquiryStatus>().notNull().default("new"),
+    createdAt: integer("created_at").notNull().default(now),
+    updatedAt: integer("updated_at").notNull().default(now),
+  },
+  (t) => [index("sale_inquiries_status_idx").on(t.status, t.createdAt)],
 );

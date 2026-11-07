@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, ne } from "drizzle-orm";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 async function load(slug: string) {
   const db = await getDb();
   return db.query.vehicles.findFirst({
-    where: and(eq(schema.vehicles.slug, slug), eq(schema.vehicles.isPublic, true), eq(schema.vehicles.status, "available")),
+    where: and(eq(schema.vehicles.slug, slug), eq(schema.vehicles.isPublic, true), eq(schema.vehicles.status, "available"), ne(schema.vehicles.listing, "sale")),
   });
 }
 
@@ -104,6 +104,12 @@ export default async function VehiclePage({ params, searchParams }: { params: Pr
               </ul>
             )}
             {v.description && <p className="mt-8 max-w-prose whitespace-pre-line text-[17px] leading-relaxed text-ink-2">{v.description}</p>}
+            {v.listing === "both" && !v.soldAt && (
+              <Link href={`/vendita/${v.slug}`} className="mt-8 inline-flex items-center gap-2 rounded-xl bg-red px-4 py-3 text-[15px] font-bold text-white hover:bg-red-deep">
+                Ti piace? Questo mezzo è anche in vendita
+                {v.salePriceEur != null ? ` · € ${v.salePriceEur.toLocaleString("it-IT")}` : ""}
+              </Link>
+            )}
           </div>
           <div id="prenota" className="scroll-mt-20 lg:sticky lg:top-24 lg:self-start">
             <BookingWidget

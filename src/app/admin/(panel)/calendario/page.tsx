@@ -1,4 +1,4 @@
-import { asc, ne } from "drizzle-orm";
+import { and, asc, ne } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth";
 import { calendarBookings } from "@/lib/bookings";
 import { getDb, schema } from "@/lib/db";
@@ -22,7 +22,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const to = romeToUtc(addDays(start, DAYS));
   const db = await getDb();
   const [vehicles, bookings] = await Promise.all([
-    db.select().from(schema.vehicles).where(ne(schema.vehicles.status, "inactive")).orderBy(asc(schema.vehicles.sortOrder), asc(schema.vehicles.brand)),
+    db.select().from(schema.vehicles).where(and(ne(schema.vehicles.status, "inactive"), ne(schema.vehicles.listing, "sale"))).orderBy(asc(schema.vehicles.sortOrder), asc(schema.vehicles.brand)),
     calendarBookings(from, to),
   ]);
   return (

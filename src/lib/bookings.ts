@@ -69,7 +69,7 @@ export async function insertBookingIfFree(b: NewBooking): Promise<{ id: string; 
            customer_notes, internal_notes, price_eur, deposit_eur, decided_by, decided_at, created_at, updated_at)
          SELECT ?4, ?5, ?6, ?1, ?7, ?8, ?9, ?2, ?3, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?16
          WHERE ${NO_OVERLAP}
-           AND EXISTS (SELECT 1 FROM vehicles v WHERE v.id = ?1 AND v.status <> 'inactive')`,
+           AND EXISTS (SELECT 1 FROM vehicles v WHERE v.id = ?1 AND v.status <> 'inactive' AND (?6 = 'block' OR v.listing <> 'sale'))`,
       )
         .bind(
           b.vehicleId,
@@ -196,9 +196,9 @@ export async function rescheduleBooking(
   const res = await env.DB.prepare(
     `UPDATE bookings SET vehicle_id = ?1, start_at = ?2, end_at = ?3, updated_at = ?5
      WHERE id = ?4 AND status = ?6 ${checkOverlap ? `AND ${NO_OVERLAP}` : ""}
-       AND EXISTS (SELECT 1 FROM vehicles v WHERE v.id = ?1 AND v.status <> 'inactive')`,
+       AND EXISTS (SELECT 1 FROM vehicles v WHERE v.id = ?1 AND v.status <> 'inactive' AND (?7 = 'block' OR v.listing <> 'sale'))`,
   )
-    .bind(next.vehicleId, next.startAt, next.endAt, id, Date.now(), booking.status)
+    .bind(next.vehicleId, next.startAt, next.endAt, id, Date.now(), booking.status, booking.kind)
     .run();
   if (res.meta.changes !== 1) throw new BookingError("conflict", "In quelle date il mezzo è già occupato.");
   const changed =

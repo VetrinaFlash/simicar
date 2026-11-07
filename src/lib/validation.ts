@@ -97,6 +97,16 @@ export const vehicleSchema = z.object({
     ),
   description: optional(2000),
   status: z.enum(["available", "maintenance", "inactive"]),
+  listing: z.enum(["rental", "sale", "both"]).default("rental"),
+  salePriceEur: optInt(0, 10_000_000),
+  saleCondition: z
+    .enum(["usato", "km0", "nuovo", ""])
+    .optional()
+    .transform((v) => (v ? v : null)),
+  registrationDate: z
+    .union([z.string().regex(/^\d{4}-\d{2}$/, "Data di immatricolazione non valida"), z.literal("")])
+    .optional()
+    .transform((v) => (v ? v : null)),
   isPublic: z
     .string()
     .optional()
@@ -187,3 +197,21 @@ export function firstError(err: z.ZodError): string {
 }
 
 export const MAX_RENTAL_MS = 366 * 86_400_000;
+
+export const saleInquirySchema = z.object({
+  vehicleId: z.string().uuid(),
+  name: trimmed(80).min(2, "Inserisci nome e cognome"),
+  phone,
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(160)
+    .optional()
+    .transform((v) => (v ? v : null))
+    .refine((v) => v === null || z.string().email().safeParse(v).success, "Email non valida"),
+  message: optional(1000),
+  privacy: z.literal("on", { message: "Devi accettare l'informativa privacy" }),
+  website: z.string().max(0).optional(),
+  turnstileToken: z.string().max(2048).optional(),
+});

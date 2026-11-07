@@ -77,6 +77,7 @@ export async function removeDemoDataAction() {
     env.DB.prepare("DELETE FROM notifications WHERE id LIKE ?").bind(like),
     env.DB.prepare("DELETE FROM bookings WHERE id LIKE ? OR vehicle_id LIKE ? OR customer_id LIKE ?").bind(like, like, like),
     env.DB.prepare("DELETE FROM customers WHERE id LIKE ?").bind(like),
+    env.DB.prepare("DELETE FROM sale_inquiries WHERE vehicle_id LIKE ?").bind(like),
     env.DB.prepare("DELETE FROM vehicle_photos WHERE vehicle_id LIKE ?").bind(like),
     env.DB.prepare("DELETE FROM vehicles WHERE id LIKE ?").bind(like),
   ]);

@@ -1,13 +1,13 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { audit } from "@/lib/audit";
 import { BookingError, insertBookingIfFree } from "@/lib/bookings";
 import { getDb, schema } from "@/lib/db";
 import { getEnv, runInBackground } from "@/lib/env";
 import { sendEmail } from "@/lib/email/send";
-import { adminNewRequestMail, requestReceivedMail } from "@/lib/email/templates";
+import { adminNewRequestMail, adminSaleInquiryMail, requestReceivedMail } from "@/lib/email/templates";
 import { notifyAdmins } from "@/lib/notify";
 import { newId, sha256Hex } from "@/lib/security/crypto";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -15,7 +15,7 @@ import { ipHash } from "@/lib/security/request";
 import { getSettings } from "@/lib/settings";
 import { fmtDateTime, romeToUtc } from "@/lib/time";
 import { verifyTurnstile } from "@/lib/turnstile";
-import { MAX_RENTAL_MS, bookingRequestSchema } from "@/lib/validation";
+import { MAX_RENTAL_MS, bookingRequestSchema, saleInquirySchema } from "@/lib/validation";
 import { vehicleName } from "@/lib/vehicles";
 
 export type RequestState = {
@@ -62,7 +62,7 @@ export async function requestBookingAction(_prev: RequestState, form: FormData):
 
   const db = await getDb();
   const vehicle = await db.query.vehicles.findFirst({
-    where: and(eq(schema.vehicles.id, d.vehicleId), eq(schema.vehicles.isPublic, true), eq(schema.vehicles.status, "available")),
+    where: and(eq(schema.vehicles.id, d.vehicleId), eq(schema.vehicles.isPublic, true), eq(schema.vehicles.status, "available"), ne(schema.vehicles.listing, "sale")),
   });
   if (!vehicle) return { error: "Questo mezzo non è più prenotabile online." };
 
@@ -129,4 +129,53 @@ export async function requestBookingAction(_prev: RequestState, form: FormData):
 
   revalidatePath("/admin", "layout");
   return { ok: true, code: created.code, email: d.email };
+}
+
+export type InquiryState = { ok?: boolean; error?: string; fieldErrors?: Record<string, string> };
+
+/** Richiesta di informazioni per un mezzo in vendita. */
+export async function saleInquiryAction(_prev: InquiryState, form: FormData): Promise<InquiryState> {
+  const parsed = saleInquirySchema.safeParse(Object.fromEntries(form));
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const i of parsed.error.issues) {
+      const k = String(i.path[0] ?? "");
+      if (k === "website") return { ok: true }; // bot
+      if (!fieldErrors[k]) fieldErrors[k] = i.message;
+    }
+    return { error: "Controlla i campi evidenziati.", fieldErrors };
+  }
+  const d = parsed.data;
+  const ip = await ipHash();
+  if (!(await rateLimit(`inq:ip:${ip}`, 6, 60 * 60_000))) return { error: "Hai inviato troppe richieste. Riprova tra un'ora o chiamaci." };
+  if (!(await verifyTurnstile(d.turnstileToken))) return { error: "Verifica anti-spam non riuscita. Ricarica la pagina e riprova." };
+
+  const db = await getDb();
+  const vehicle = await db.query.vehicles.findFirst({
+    where: and(eq(schema.vehicles.id, d.vehicleId), eq(schema.vehicles.isPublic, true), ne(schema.vehicles.listing, "rental"), isNull(schema.vehicles.soldAt)),
+  });
+  if (!vehicle) return { error: "Questo mezzo non è più in vendita." };
+
+  const id = newId();
+  await db.insert(schema.saleInquiries).values({ id, vehicleId: vehicle.id, name: d.name, phone: d.phone, email: d.email, message: d.message });
+
+  const [s, env] = await Promise.all([getSettings(), getEnv()]);
+  const name = vehicleName(vehicle);
+  const price = vehicle.salePriceEur != null ? `€ ${vehicle.salePriceEur.toLocaleString("it-IT")}` : "prezzo su richiesta";
+  const adminTo = s.notifyEmail || s.email;
+  await runInBackground(
+    Promise.all([
+      adminTo
+        ? sendEmail({
+            to: adminTo,
+            ...adminSaleInquiryMail(s, { vehicleName: name, price, name: d.name, phone: d.phone, email: d.email, message: d.message, url: new URL("/admin/vendite", env.PUBLIC_SITE_URL).toString() }),
+            replyTo: d.email ?? undefined,
+            idempotencyKey: `inquiry-${id}`,
+          })
+        : Promise.resolve(),
+      notifyAdmins({ type: "sale.inquiry", title: `Interesse per ${name}`, body: `${d.name} · ${d.phone}`, url: "/admin/vendite" }),
+    ]),
+  );
+  revalidatePath("/admin", "layout");
+  return { ok: true };
 }

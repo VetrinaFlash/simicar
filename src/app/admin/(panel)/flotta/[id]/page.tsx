@@ -2,6 +2,7 @@ import { and, asc, eq, gt, inArray } from "drizzle-orm";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { markSoldAction } from "@/app/admin/actions/sales";
 import { deleteVehicleAction, updateVehicleAction } from "@/app/admin/actions/vehicles";
 import { Plate } from "@/components/plate";
 import { ConfirmButton } from "@/components/confirm-button";
@@ -42,7 +43,7 @@ export default async function VehiclePage({ params, searchParams }: { params: Pr
         sub={<Plate value={vehicle.plate} size="sm" />}
         action={
           vehicle.isPublic && vehicle.status !== "inactive" ? (
-            <Link href={`/flotta/${vehicle.slug}`} target="_blank" className="inline-flex items-center gap-1.5 text-sm font-semibold text-eu hover:underline">
+            <Link href={vehicle.listing === "sale" ? `/vendita/${vehicle.slug}` : `/flotta/${vehicle.slug}`} target="_blank" className="inline-flex items-center gap-1.5 text-sm font-semibold text-eu hover:underline">
               Vedi sul sito <ExternalLink className="size-4" />
             </Link>
           ) : null
@@ -83,6 +84,24 @@ export default async function VehiclePage({ params, searchParams }: { params: Pr
               ))}
             </ul>
           </Panel>
+          {vehicle.listing !== "rental" && (
+            <Panel className={vehicle.soldAt ? "p-5 ring-2 ring-go/40" : "p-5"}>
+              <p className="text-sm font-bold">{vehicle.soldAt ? `Venduto il ${new Date(vehicle.soldAt).toLocaleDateString("it-IT")}` : "In vendita"}</p>
+              <p className="mt-1 text-sm text-ink-3">
+                {vehicle.soldAt
+                  ? "Il mezzo non compare più sul sito né nel calendario. Lo storico dei noleggi resta."
+                  : "Quando lo vendi, segnalo qui: sparisce dal sito e dal noleggio, ma resta nello storico."}
+              </p>
+              <ConfirmButton
+                action={markSoldAction.bind(null, id, !vehicle.soldAt)}
+                message={vehicle.soldAt ? "Rimettere il mezzo in vendita?" : "Segnare il mezzo come venduto?"}
+                variant={vehicle.soldAt ? "secondary" : "success"}
+                className="mt-4"
+              >
+                {vehicle.soldAt ? "Rimetti in vendita" : "Segna come venduto"}
+              </ConfirmButton>
+            </Panel>
+          )}
           <Panel className="p-5">
             <p className="text-sm font-bold">Rimuovi dalla flotta</p>
             <p className="mt-1 text-sm text-ink-3">Se il veicolo ha uno storico di noleggi viene solo disattivato, così lo storico resta completo.</p>

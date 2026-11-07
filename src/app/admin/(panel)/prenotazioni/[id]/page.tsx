@@ -1,4 +1,4 @@
-import { asc, eq, ne } from "drizzle-orm";
+import { and, asc, eq, ne } from "drizzle-orm";
 import { AlertTriangle, ArrowLeft, Mail, MessageCircle, Phone } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -42,7 +42,7 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
     active ? findConflicts(b) : Promise.resolve([]),
     db.select({ id: schema.vehicles.id, brand: schema.vehicles.brand, model: schema.vehicles.model, version: schema.vehicles.version, plate: schema.vehicles.plate })
       .from(schema.vehicles)
-      .where(ne(schema.vehicles.status, "inactive"))
+      .where(and(ne(schema.vehicles.status, "inactive"), ne(schema.vehicles.listing, "sale")))
       .orderBy(asc(schema.vehicles.sortOrder)),
   ]);
 

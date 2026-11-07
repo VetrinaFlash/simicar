@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   Settings,
+  Tag,
   Sun,
   Users,
   X,
@@ -28,6 +29,7 @@ const NAV = [
   { href: "/admin/prenotazioni", label: "Prenotazioni", icon: ClipboardList },
   { href: "/admin/flotta", label: "Flotta", icon: CarFront },
   { href: "/admin/clienti", label: "Clienti", icon: Users },
+  { href: "/admin/vendite", label: "Vendite", icon: Tag, inquiries: true },
   { href: "/admin/impostazioni", label: "Impostazioni", icon: Settings },
 ];
 const MOBILE_MAIN = ["/admin", "/admin/calendario", "/admin/richieste", "/admin/flotta"];
@@ -41,12 +43,14 @@ export function AdminShell({
   businessName,
   pending,
   unread,
+  inquiries = 0,
   children,
 }: {
   user: AdminUser;
   businessName: string;
   pending: number;
   unread: number;
+  inquiries?: number;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -89,6 +93,11 @@ export function AdminShell({
                 {n.badge && pending > 0 && (
                   <span className="relative ml-auto grid h-6 min-w-6 place-items-center rounded-full bg-signal px-1.5 text-xs font-bold text-ink">
                     {pending}
+                  </span>
+                )}
+                {"inquiries" in n && inquiries > 0 && (
+                  <span className="relative ml-auto grid h-6 min-w-6 place-items-center rounded-full bg-red px-1.5 text-xs font-bold text-white">
+                    {inquiries}
                   </span>
                 )}
               </Link>
@@ -159,7 +168,10 @@ export function AdminShell({
             onClick={() => setMoreOpen(true)}
             className="flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold text-ink-3"
           >
-            <Menu className="size-[22px]" />
+            <span className="relative">
+              <Menu className="size-[22px]" />
+              {inquiries > 0 && <span className="absolute -right-1.5 -top-1 size-2.5 rounded-full bg-red" />}
+            </span>
             Altro
           </button>
         </div>
@@ -194,6 +206,9 @@ export function AdminShell({
               {NAV.filter((n) => !MOBILE_MAIN.includes(n.href)).map((n) => (
                 <Link key={n.href} href={n.href} className="flex h-14 items-center gap-3 rounded-xl px-3 text-[16px] font-medium hover:bg-concrete">
                   <n.icon className="size-5 text-ink-2" /> {n.label}
+                  {"inquiries" in n && inquiries > 0 && (
+                    <span className="ml-auto grid h-6 min-w-6 place-items-center rounded-full bg-red px-1.5 text-xs font-bold text-white">{inquiries}</span>
+                  )}
                 </Link>
               ))}
               <form action={logoutAction}>

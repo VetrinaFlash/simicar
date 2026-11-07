@@ -3,6 +3,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/components/site/site-header";
 import { SmoothScroll } from "@/components/site/smooth-scroll";
 import { getEnv } from "@/lib/env";
+import { getSaleVehicles } from "@/lib/public";
 import { getSettings } from "@/lib/settings";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,12 +24,12 @@ function waHref(n: string) {
 }
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const s = await getSettings();
+  const [s, forSale] = await Promise.all([getSettings(), getSaleVehicles()]);
   const year = new Date().getFullYear();
   return (
     <>
       <SmoothScroll />
-      <SiteHeader name={s.businessName} phone={s.phone} whatsapp={s.whatsapp} />
+      <SiteHeader name={s.businessName} phone={s.phone} whatsapp={s.whatsapp} hasSale={forSale.length > 0} />
 
       {children}
 

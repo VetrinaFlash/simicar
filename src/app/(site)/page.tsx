@@ -1,7 +1,8 @@
 import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Fleet } from "@/components/site/fleet";
 import { Hero } from "@/components/site/hero";
-import { busyVehicleIds, getPublicVehicles } from "@/lib/public";
+import { SaleSection } from "@/components/site/sale-section";
+import { busyVehicleIds, getPublicVehicles, getSaleVehicles } from "@/lib/public";
 import { getSettings } from "@/lib/settings";
 import { fmtIsoDate, romeToUtc, todayRome } from "@/lib/time";
 
@@ -24,7 +25,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   if (dal && al && al < dal) al = "";
   if (dal && !al) al = dal;
 
-  const [s, all] = await Promise.all([getSettings(), getPublicVehicles()]);
+  const [s, all, forSale] = await Promise.all([getSettings(), getPublicVehicles(), getSaleVehicles()]);
   const busy = dal ? await busyVehicleIds(romeToUtc(dal, s.openFrom), romeToUtc(al, s.openTo)) : new Set<string>();
   const vehicles = all
     .map((v) => ({ ...v, busy: busy.has(v.id) }))
@@ -48,6 +49,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       />
 
       <Fleet vehicles={vehicles} query={q.size ? `?${q}` : ""} rangeLabel={rangeLabel} initialTipo={tipo} />
+
+      <SaleSection vehicles={forSale} />
 
       {/* Come funziona: è una sequenza reale, per questo è numerata */}
       <section id="come-funziona" className="scroll-mt-16 border-y border-line bg-paper py-16 md:py-24">

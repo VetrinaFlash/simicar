@@ -1,4 +1,4 @@
-import { asc, desc, ne } from "drizzle-orm";
+import { and, asc, desc, ne } from "drizzle-orm";
 import { PageHeader } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
@@ -13,7 +13,7 @@ export default async function NewBookingPage({ searchParams }: { searchParams: P
   const sp = await searchParams;
   const db = await getDb();
   const [vehicles, customers] = await Promise.all([
-    db.select().from(schema.vehicles).where(ne(schema.vehicles.status, "inactive")).orderBy(asc(schema.vehicles.sortOrder)),
+    db.select().from(schema.vehicles).where(and(ne(schema.vehicles.status, "inactive"), ne(schema.vehicles.listing, "sale"))).orderBy(asc(schema.vehicles.sortOrder)),
     db
       .select({ id: schema.customers.id, firstName: schema.customers.firstName, lastName: schema.customers.lastName, phone: schema.customers.phone, email: schema.customers.email, blacklisted: schema.customers.blacklisted })
       .from(schema.customers)

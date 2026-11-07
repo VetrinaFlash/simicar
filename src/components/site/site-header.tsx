@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { cx } from "@/components/ui";
 
-export function SiteHeader({ name, phone, whatsapp }: { name: string; phone: string; whatsapp: string }) {
+export function SiteHeader({ name, phone, whatsapp, hasSale }: { name: string; phone: string; whatsapp: string; hasSale: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [showBar, setShowBar] = useState(false);
   const pathname = usePathname();
@@ -21,7 +21,7 @@ export function SiteHeader({ name, phone, whatsapp }: { name: string; phone: str
     return () => window.removeEventListener("scroll", on);
   }, []);
   const wa = whatsapp ? `https://wa.me/${(() => { const d = whatsapp.replace(/[^\d]/g, ""); return d.length <= 10 ? `39${d}` : d; })()}` : "";
-  const onVehicle = pathname.startsWith("/flotta/");
+  const onVehicle = pathname.startsWith("/flotta/") || pathname.startsWith("/vendita/");
 
   return (
     <>
@@ -38,6 +38,7 @@ export function SiteHeader({ name, phone, whatsapp }: { name: string; phone: str
           </Link>
           <nav className="flex items-center gap-1 text-[15px] font-semibold">
             <Link href="/#flotta" className="hidden rounded-full px-4 py-2 hover:bg-ink/5 sm:block">Flotta</Link>
+            {hasSale && <Link href="/#vendita" className="hidden rounded-full px-4 py-2 hover:bg-ink/5 sm:block">In vendita</Link>}
             <Link href="/#come-funziona" className="hidden rounded-full px-4 py-2 hover:bg-ink/5 lg:block">Come funziona</Link>
             <Link href="/#dove" className="hidden rounded-full px-4 py-2 hover:bg-ink/5 sm:block">Dove siamo</Link>
             {phone && (

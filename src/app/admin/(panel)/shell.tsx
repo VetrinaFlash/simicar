@@ -61,9 +61,9 @@ export function AdminShell({
     <div className="min-h-dvh md:grid md:grid-cols-[248px_1fr]">
       {/* Sidebar desktop */}
       <aside className="sticky top-0 hidden h-dvh flex-col bg-ink px-3 py-5 text-white md:flex">
-        <Link href="/admin" className="mx-2 mb-7 block rounded-xl bg-eu px-4 py-3 ring-2 ring-inset ring-white/90">
-          <span className="block text-[11px] font-medium text-white/70">Gestione</span>
-          <span className="font-wide block truncate text-[15px] font-extrabold tracking-tight">{businessName}</span>
+        <Link href="/admin" className="mx-2 mb-7 block overflow-hidden rounded-xl bg-eu ring-2 ring-inset ring-white/90">
+          <span className="block bg-red px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white">Gestione</span>
+          <span className="font-narrow block truncate px-4 pb-2.5 pt-1.5 text-[24px] font-black uppercase leading-none">{businessName}</span>
         </Link>
         <nav className="flex flex-1 flex-col gap-0.5">
           {NAV.map((n) => {
@@ -109,7 +109,7 @@ export function AdminShell({
       <div className="min-w-0">
         {/* Barra superiore */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line/70 bg-concrete/85 px-4 backdrop-blur-xl md:px-8">
-          <Link href="/admin" className="font-wide truncate text-[15px] font-extrabold tracking-tight md:invisible">
+          <Link href="/admin" className="font-narrow truncate text-[22px] font-black uppercase text-eu-deep md:invisible">
             {businessName}
           </Link>
           <Link

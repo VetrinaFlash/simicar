@@ -53,7 +53,7 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
       </Link>
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <h1 className="font-wide text-[26px] font-extrabold tracking-tight md:text-[32px]">
+        <h1 className="font-narrow text-[34px] font-black uppercase leading-[0.95] text-eu-deep md:text-[44px]">
           {isBlock ? "Blocco" : `${c?.firstName ?? ""} ${c?.lastName ?? ""}`}
         </h1>
         <StatusBadge status={b.status} kind={b.kind} />
@@ -90,12 +90,12 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
               <div className="bg-paper p-5">
                 <p className="text-sm text-ink-3">Ritiro</p>
                 <p className="mt-1 text-[19px] font-bold capitalize">{fmtDateLong(b.startAt)}</p>
-                <p className="font-wide text-3xl font-extrabold tabular">{toRomeTime(b.startAt)}</p>
+                <p className="font-narrow text-[40px] font-black leading-none tabular text-eu-deep">{toRomeTime(b.startAt)}</p>
               </div>
               <div className="bg-paper p-5">
                 <p className="text-sm text-ink-3">Riconsegna</p>
                 <p className="mt-1 text-[19px] font-bold capitalize">{fmtDateLong(b.endAt)}</p>
-                <p className="font-wide text-3xl font-extrabold tabular">{toRomeTime(b.endAt)}</p>
+                <p className="font-narrow text-[40px] font-black leading-none tabular text-eu-deep">{toRomeTime(b.endAt)}</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">

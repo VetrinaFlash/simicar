@@ -68,7 +68,7 @@ export default async function VehiclePage({ params, searchParams }: { params: Pr
   if (v.depositEur) specs.push(["Cauzione", `€ ${v.depositEur.toLocaleString("it-IT")}`]);
 
   return (
-    <main className="pb-24 pt-24 md:pt-28">
+    <main className="pb-28 pt-24 md:pt-28 lg:pb-24">
       <div className="mx-auto max-w-[1320px] px-5 md:px-8">
         <Link href={`/${dal ? `?dal=${dal}${al ? `&al=${al}` : ""}` : ""}#flotta`} className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-ink-2 hover:text-ink">
           <ArrowLeft className="size-4" /> Tutta la flotta
@@ -82,7 +82,7 @@ export default async function VehiclePage({ params, searchParams }: { params: Pr
             {v.version && <p className="mt-2 text-[19px] text-ink-2">{v.version}</p>}
             {v.priceFromEur != null && (
               <p className="mt-4 text-[17px]">
-                da <span className="font-wide text-[28px] font-extrabold tabular">€{v.priceFromEur}</span> al giorno
+                da <span className="font-narrow text-[38px] font-black tabular text-eu-deep">€{v.priceFromEur}</span> al giorno
               </p>
             )}
             <div className="mt-8">
@@ -105,7 +105,7 @@ export default async function VehiclePage({ params, searchParams }: { params: Pr
             )}
             {v.description && <p className="mt-8 max-w-prose whitespace-pre-line text-[17px] leading-relaxed text-ink-2">{v.description}</p>}
           </div>
-          <div className="lg:sticky lg:top-8 lg:self-start">
+          <div id="prenota" className="scroll-mt-20 lg:sticky lg:top-24 lg:self-start">
             <BookingWidget
               vehicleId={v.id}
               vehicleName={`${v.brand} ${v.model}`}
@@ -121,6 +121,15 @@ export default async function VehiclePage({ params, searchParams }: { params: Pr
           </div>
         </div>
       </div>
+      {/* Su telefono il calendario è sotto le foto: una barra porta subito lì */}
+      <a
+        href="#prenota"
+        className="fixed inset-x-3 bottom-3 z-30 flex h-14 items-center justify-between rounded-2xl bg-red px-5 text-[16px] font-bold text-white shadow-2xl lg:hidden"
+        style={{ marginBottom: "env(safe-area-inset-bottom)" }}
+      >
+        Scegli le date
+        <span className="text-[14px] font-semibold text-white/80">{v.priceFromEur != null ? `da €${v.priceFromEur}/giorno` : "Nessun pagamento online"}</span>
+      </a>
     </main>
   );
 }

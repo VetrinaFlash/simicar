@@ -14,6 +14,16 @@ type V = { id: string; name: string; plate: string; type: "auto" | "furgone"; st
 type B = { id: string; code: string; kind: "rental" | "block"; status: string; vehicleId: string; startAt: number; endAt: number; label: string };
 
 const ROW = 64;
+const useLeftW = () => {
+  const [w, setW] = useState(168);
+  useLayoutEffect(() => {
+    const u = () => setW(window.innerWidth < 640 ? 112 : 168);
+    u();
+    window.addEventListener("resize", u);
+    return () => window.removeEventListener("resize", u);
+  }, []);
+  return w;
+};
 const SNAP_H = 0.5; // aggancio a mezz'ora
 const WEEKDAY = new Intl.DateTimeFormat("it-IT", { weekday: "short", timeZone: "UTC" });
 const MONTH = new Intl.DateTimeFormat("it-IT", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -35,6 +45,7 @@ type Drag = { id: string; startX: number; startY: number; dx: number; dy: number
 export function Timeline({ start, days, today, selectedDay, vehicles, bookings: initial }: { start: string; days: number; today: string; selectedDay: string; vehicles: V[]; bookings: B[] }) {
   const router = useRouter();
   const scroller = useRef<HTMLDivElement>(null);
+  const LW = useLeftW();
   const [colW, setColW] = useState(72);
   const [bookings, setBookings] = useState(initial);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -147,7 +158,7 @@ export function Timeline({ start, days, today, selectedDay, vehicles, bookings: 
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-wide text-[26px] font-extrabold tracking-tight md:text-[32px]">Calendario</h1>
+          <h1 className="font-narrow text-[34px] font-black uppercase leading-[0.95] text-eu-deep md:text-[44px]">Calendario</h1>
           <p className="hidden text-[15px] capitalize text-ink-3 md:block">{monthLabel}</p>
         </div>
         <div className="hidden items-center gap-2 md:flex">
@@ -184,10 +195,10 @@ export function Timeline({ start, days, today, selectedDay, vehicles, bookings: 
           <MobileAgenda start={start} days={days} today={today} selectedDay={selectedDay} vehicles={vehicles} bookings={bookings} />
           <div className="hidden overflow-hidden rounded-2xl bg-paper ring-1 ring-line/70 md:block">
           <div ref={scroller} className="relative overflow-x-auto overscroll-x-contain" style={{ scrollbarWidth: "thin" }}>
-            <div className="relative" style={{ width: days * colW + 168 }}>
+            <div className="relative" style={{ width: days * colW + LW }}>
               {/* Intestazione giorni */}
               <div className="sticky top-0 z-20 flex border-b border-line bg-paper">
-                <div className="sticky left-0 z-30 w-[168px] shrink-0 border-r border-line bg-paper" />
+                <div className="sticky left-0 z-30 shrink-0 border-r border-line bg-paper" style={{ width: LW }} />
                 {dates.map((d) => {
                   const l = dayLabel(d);
                   const isToday = d === today;
@@ -204,7 +215,7 @@ export function Timeline({ start, days, today, selectedDay, vehicles, bookings: 
               {/* Righe veicoli */}
               {vehicles.map((v) => (
                 <div key={v.id} className="relative flex border-b border-line/60 last:border-b-0" style={{ height: ROW }}>
-                  <div className="sticky left-0 z-10 flex w-[168px] shrink-0 flex-col justify-center border-r border-line bg-paper px-3">
+                  <div className="sticky left-0 z-10 flex shrink-0 flex-col justify-center border-r border-line bg-paper px-3" style={{ width: LW }}>
                     <p className="truncate text-[13px] font-bold leading-tight">{v.name}</p>
                     <p className="font-narrow text-xs font-bold tracking-wider text-ink-3">
                       {v.plate}
@@ -226,13 +237,13 @@ export function Timeline({ start, days, today, selectedDay, vehicles, bookings: 
 
               {/* Linea "adesso" */}
               {nowX > 0 && nowX < days * colW && (
-                <div className="pointer-events-none absolute bottom-0 top-0 z-[5] w-0.5 bg-stop" style={{ left: 168 + nowX }}>
+                <div className="pointer-events-none absolute bottom-0 top-0 z-[5] w-0.5 bg-stop" style={{ left: LW + nowX }}>
                   <span className="absolute -left-[3px] -top-1 size-2 rounded-full bg-stop" />
                 </div>
               )}
 
               {/* Barre prenotazioni */}
-              <div className="pointer-events-none absolute inset-y-0 right-0 z-[6]" style={{ left: 168 }}>
+              <div className="pointer-events-none absolute inset-y-0 right-0 z-[6]" style={{ left: LW }}>
                 {bookings.map((b) => {
                   const row = rowOf.get(b.vehicleId);
                   if (row === undefined) return null;

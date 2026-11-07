@@ -132,7 +132,7 @@ export function PageHeader({ title, sub, action }: { title: string; sub?: ReactN
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="font-wide text-[26px] font-extrabold leading-tight tracking-tight md:text-[32px]">{title}</h1>
+        <h1 className="font-narrow text-[34px] font-black uppercase leading-[0.95] text-eu-deep md:text-[44px]">{title}</h1>
         {sub && <p className="mt-1 text-[15px] text-ink-3">{sub}</p>}
       </div>
       {action}

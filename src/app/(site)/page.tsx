@@ -1,4 +1,4 @@
-import { MapPin, MessageCircle, Phone } from "lucide-react";
+import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Fleet } from "@/components/site/fleet";
 import { Hero } from "@/components/site/hero";
 import { busyVehicleIds, getPublicVehicles } from "@/lib/public";
@@ -27,7 +27,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const [s, all] = await Promise.all([getSettings(), getPublicVehicles()]);
   const busy = dal ? await busyVehicleIds(romeToUtc(dal, s.openFrom), romeToUtc(al, s.openTo)) : new Set<string>();
   const vehicles = all
-    .filter((v) => !tipo || v.type === tipo)
     .map((v) => ({ ...v, busy: busy.has(v.id) }))
     .sort((a, b) => Number(a.busy) - Number(b.busy));
 
@@ -48,10 +47,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         hasVans={all.some((v) => v.type === "furgone")}
       />
 
-      <Fleet vehicles={vehicles} query={q.size ? `?${q}` : ""} rangeLabel={rangeLabel} />
+      <Fleet vehicles={vehicles} query={q.size ? `?${q}` : ""} rangeLabel={rangeLabel} initialTipo={tipo} />
 
       {/* Come funziona: è una sequenza reale, per questo è numerata */}
-      <section className="border-y border-line bg-paper py-16 md:py-24">
+      <section id="come-funziona" className="scroll-mt-16 border-y border-line bg-paper py-16 md:py-24">
         <div className="mx-auto max-w-[1320px] px-5 md:px-8">
           <h2 className="font-narrow max-w-3xl text-[clamp(2.2rem,4.4vw,3.8rem)] font-black uppercase leading-[0.92] text-eu-deep">
             Niente pagamenti online. Prima ti confermiamo, poi ritiri.
@@ -72,32 +71,63 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </div>
       </section>
 
-      <section id="dove" className="scroll-mt-4 py-16 md:py-24">
-        <div className="mx-auto grid max-w-[1320px] gap-10 px-5 md:px-8 lg:grid-cols-2">
+      <section id="dove" className="scroll-mt-16 bg-eu-deep py-16 text-white md:py-24">
+        <div className="mx-auto grid max-w-[1320px] gap-10 px-5 md:px-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <div>
-            <h2 className="font-narrow text-[clamp(2.6rem,5.4vw,4.6rem)] font-black uppercase leading-[0.9] text-eu-deep">Dove siamo</h2>
-            {s.address && <p className="mt-6 text-[22px] font-bold leading-snug">{s.address}</p>}
-            {s.hours && <p className="mt-2 text-[17px] text-ink-2">{s.hours}</p>}
+            <h2 className="font-narrow text-[clamp(2.6rem,5.4vw,4.6rem)] font-black uppercase leading-[0.9]">Dove siamo</h2>
+            {s.address ? (
+              <p className="mt-6 max-w-xl text-[clamp(1.3rem,2.2vw,1.7rem)] font-bold leading-snug">{s.address}</p>
+            ) : (
+              <p className="mt-6 max-w-xl text-[19px] text-white/70">Chiamaci o scrivici: ti diamo tutte le indicazioni per il ritiro.</p>
+            )}
+            {s.hours && (
+              <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-[15px] font-semibold">
+                <Clock className="size-4" /> {s.hours}
+              </p>
+            )}
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row lg:flex-col lg:items-stretch lg:justify-end">
+          <div className="flex flex-col gap-3">
             {s.phone && (
-              <a href={`tel:${s.phone}`} className="flex h-16 items-center gap-4 rounded-2xl bg-red px-6 text-[18px] font-bold text-white hover:bg-red-deep">
-                <Phone className="size-5" /> Chiama <span className="ml-auto font-normal tabular text-white/70">{s.phone}</span>
+              <a href={`tel:${s.phone}`} className="flex h-16 items-center gap-4 rounded-2xl bg-red px-6 text-[18px] font-bold text-white transition-colors hover:bg-red-deep">
+                <Phone className="size-5" /> Chiama <span className="ml-auto font-normal tabular text-white/80">{s.phone}</span>
               </a>
             )}
             {s.whatsapp && (
-              <a href={waHref(s.whatsapp)} target="_blank" rel="noopener noreferrer" className="flex h-16 items-center gap-4 rounded-2xl bg-paper px-6 text-[18px] font-bold ring-1 ring-line hover:ring-ink">
+              <a href={waHref(s.whatsapp)} target="_blank" rel="noopener noreferrer" className="flex h-16 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
                 <MessageCircle className="size-5" /> Scrivici su WhatsApp
               </a>
             )}
             {s.mapsUrl && (
-              <a href={s.mapsUrl} target="_blank" rel="noopener noreferrer" className="flex h-16 items-center gap-4 rounded-2xl bg-paper px-6 text-[18px] font-bold ring-1 ring-line hover:ring-ink">
+              <a href={s.mapsUrl} target="_blank" rel="noopener noreferrer" className="flex h-16 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
                 <MapPin className="size-5" /> Apri in Google Maps
+              </a>
+            )}
+            {s.email && (
+              <a href={`mailto:${s.email}`} className="flex h-16 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
+                <Mail className="size-5" /> {s.email}
               </a>
             )}
           </div>
         </div>
       </section>
+
+      <script
+        type="application/ld+json"
+        // Dati strutturati per Google: attività di noleggio auto
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "AutoRental",
+            name: s.businessName,
+            description: s.heroText,
+            ...(s.address && { address: s.address }),
+            ...(s.phone && { telephone: s.phone }),
+            ...(s.email && { email: s.email }),
+            ...(s.vatNumber && { vatID: s.vatNumber }),
+            ...(s.hours && { openingHours: s.hours }),
+          }).replace(/</g, "\\u003c"),
+        }}
+      />
     </main>
   );
 }

@@ -32,7 +32,14 @@ export default async function DashboardPage() {
       .leftJoin(schema.customers, eq(schema.customers.id, schema.bookings.customerId));
   const rental = and(eq(schema.bookings.kind, "rental"), eq(schema.bookings.status, "confirmed"));
 
-  const [pickups, returns, pending, week, vehicles, [out], cargos] = await Promise.all([
+  // Mese corrente (ora italiana) per incasso e occupazione
+  const monthStartIso = `${today.slice(0, 7)}-01`;
+  const [yy, mm] = today.split("-").map(Number);
+  const nextMonthIso = `${mm === 12 ? yy! + 1 : yy}-${String(mm === 12 ? 1 : mm! + 1).padStart(2, "0")}-01`;
+  const mFrom = romeToUtc(monthStartIso);
+  const mTo = romeToUtc(nextMonthIso);
+
+  const [pickups, returns, pending, week, vehicles, [out], cargos, monthRows] = await Promise.all([
     joined().where(and(rental, gte(schema.bookings.startAt, dayStart), lt(schema.bookings.startAt, dayEnd))).orderBy(asc(schema.bookings.startAt)),
     joined().where(and(rental, gte(schema.bookings.endAt, dayStart), lt(schema.bookings.endAt, dayEnd))).orderBy(asc(schema.bookings.endAt)),
     joined().where(and(eq(schema.bookings.status, "pending"), eq(schema.bookings.kind, "rental"))).orderBy(asc(schema.bookings.createdAt)).limit(5),
@@ -47,7 +54,22 @@ export default async function DashboardPage() {
       .where(and(rental, isNull(schema.bookings.cargosSentAt), lt(schema.bookings.startAt, now + 48 * 3_600_000), gte(schema.bookings.endAt, now)))
       .orderBy(asc(schema.bookings.startAt))
       .limit(6),
+    db
+      .select({ startAt: schema.bookings.startAt, endAt: schema.bookings.endAt, priceEur: schema.bookings.priceEur })
+      .from(schema.bookings)
+      .where(
+        and(
+          eq(schema.bookings.kind, "rental"),
+          inArray(schema.bookings.status, ["confirmed", "completed"]),
+          lt(schema.bookings.startAt, mTo),
+          gte(schema.bookings.endAt, mFrom),
+        ),
+      ),
   ]);
+  const revenue = monthRows.filter((r) => r.startAt >= mFrom).reduce((sum, r) => sum + (r.priceEur ?? 0), 0);
+  const busyMs = monthRows.reduce((sum, r) => sum + Math.max(0, Math.min(r.endAt, mTo) - Math.max(r.startAt, mFrom)), 0);
+  const occupancy = vehicles.length ? Math.round((busyMs / ((mTo - mFrom) * vehicles.length)) * 100) : 0;
+  const monthName = new Intl.DateTimeFormat("it-IT", { month: "long", timeZone: "Europe/Rome" }).format(now);
 
   const maintenance = vehicles.filter((v) => v.status === "maintenance").length;
   const outNow = out?.n ?? 0;
@@ -79,7 +101,7 @@ export default async function DashboardPage() {
     <div className="space-y-5">
       <div>
         <p className="text-[15px] capitalize text-ink-3">{fmtDateLong(now)}</p>
-        <h1 className="font-wide text-[28px] font-extrabold leading-tight tracking-tight md:text-[36px]">
+        <h1 className="font-narrow text-[34px] font-black uppercase leading-[0.95] text-eu-deep md:text-[44px]">
           {greeting()}, {me.name.split(" ")[0]}
         </h1>
       </div>
@@ -87,14 +109,15 @@ export default async function DashboardPage() {
       <PushToggle variant="banner" />
 
       {/* Stato flotta adesso */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          { n: free, label: "liberi adesso", tone: "text-go" },
-          { n: outNow, label: "fuori a noleggio", tone: "text-eu" },
-          { n: maintenance, label: "in officina", tone: maintenance ? "text-stop" : "text-ink-3" },
+          { n: String(free), label: "liberi adesso", tone: "text-go" },
+          { n: String(outNow), label: maintenance ? `fuori a noleggio · ${maintenance} in officina` : "fuori a noleggio", tone: "text-eu" },
+          { n: `€${Math.round(revenue).toLocaleString("it-IT")}`, label: `prenotato a ${monthName}`, tone: "text-eu-deep" },
+          { n: `${occupancy}%`, label: `flotta occupata a ${monthName}`, tone: occupancy >= 60 ? "text-go" : "text-eu-deep" },
         ].map((k) => (
           <Panel key={k.label} className="px-4 py-4 md:px-5">
-            <p className={`font-wide text-[34px] font-extrabold leading-none tabular md:text-[42px] ${k.tone}`}>{k.n}</p>
+            <p className={`font-narrow text-[44px] font-black leading-none tabular md:text-[56px] ${k.tone}`}>{k.n}</p>
             <p className="mt-1.5 text-[13px] font-medium text-ink-2 md:text-sm">{k.label}</p>
           </Panel>
         ))}

@@ -1,26 +1,48 @@
 "use client";
 
+import { ArrowUpRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { VehicleArt } from "@/components/vehicle-art";
 import { cx } from "@/components/ui";
 import { mediaUrl } from "@/lib/vehicles";
 import type { PublicVehicle } from "@/lib/public";
 
+type Tipo = "" | "auto" | "furgone";
+
 export function Fleet({
-  vehicles,
+  vehicles: all,
   query,
   rangeLabel,
+  initialTipo,
 }: {
   vehicles: (PublicVehicle & { busy: boolean })[];
   query: string;
   rangeLabel: string | null;
+  initialTipo: Tipo;
 }) {
+  const [tipo, setTipo] = useState<Tipo>(initialTipo);
+  useEffect(() => setTipo(initialTipo), [initialTipo]);
+  const vehicles = all.filter((v) => !tipo || v.type === tipo);
   const free = vehicles.filter((v) => !v.busy).length;
+  const counts = { "": all.length, auto: all.filter((v) => v.type === "auto").length, furgone: all.filter((v) => v.type === "furgone").length };
+  const chips: { v: Tipo; label: string }[] = [
+    { v: "", label: "Tutti" },
+    ...(counts.furgone ? [{ v: "furgone" as Tipo, label: "Furgoni" }] : []),
+    ...(counts.auto ? [{ v: "auto" as Tipo, label: "Auto" }] : []),
+  ];
+  function pick(v: Tipo) {
+    setTipo(v);
+    const url = new URL(window.location.href);
+    if (v) url.searchParams.set("tipo", v);
+    else url.searchParams.delete("tipo");
+    window.history.replaceState(null, "", url);
+  }
   return (
-    <section id="flotta" className="scroll-mt-4 py-16 md:py-24">
+    <section id="flotta" className="scroll-mt-16 py-16 md:py-24">
       <div className="mx-auto max-w-[1320px] px-5 md:px-8">
-        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <h2 className="font-narrow text-[clamp(2.6rem,5.4vw,4.6rem)] font-black uppercase leading-[0.9] text-eu-deep">La flotta</h2>
           <p className="text-[17px] text-ink-2" aria-live="polite">
             {rangeLabel
@@ -31,6 +53,29 @@ export function Fleet({
           </p>
         </div>
 
+        {chips.length > 2 && (
+          <div role="radiogroup" aria-label="Filtra per tipo" className="mb-10 flex gap-2">
+            {chips.map((c) => (
+              <button
+                key={c.v || "all"}
+                type="button"
+                role="radio"
+                aria-checked={tipo === c.v}
+                onClick={() => pick(c.v)}
+                className={cx(
+                  "relative h-11 rounded-full px-5 text-[15px] font-bold transition-colors",
+                  tipo === c.v ? "text-white" : "bg-paper text-ink-2 ring-1 ring-line hover:text-ink hover:ring-ink-3",
+                )}
+              >
+                {tipo === c.v && <motion.span layoutId="fleet-chip" className="absolute inset-0 rounded-full bg-eu-deep" transition={{ type: "spring", bounce: 0.2, duration: 0.45 }} />}
+                <span className="relative">
+                  {c.label} <span className={cx("tabular", tipo === c.v ? "text-white/60" : "text-ink-3")}>{counts[c.v]}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {vehicles.length === 0 ? (
           <p className="rounded-2xl bg-paper p-10 text-center text-ink-2">I mezzi saranno disponibili a breve.</p>
         ) : (
@@ -38,6 +83,7 @@ export function Fleet({
             <AnimatePresence mode="popLayout" initial={false}>
               {vehicles.map((v) => {
                 const cover = v.photos[0];
+                const alt = v.photos[1];
                 return (
                   <motion.li
                     key={v.id}
@@ -62,6 +108,18 @@ export function Fleet({
                         ) : (
                           <VehicleArt type={v.type} className="absolute inset-0 m-auto w-3/5 text-ink-3" />
                         )}
+                        {alt && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={mediaUrl(alt.key)}
+                            alt=""
+                            loading="lazy"
+                            className="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                          />
+                        )}
+                        <span className="absolute bottom-4 right-4 inline-flex translate-y-2 items-center gap-1.5 rounded-full bg-paper px-4 py-2 text-[14px] font-bold text-eu-deep opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
+                          {v.busy ? "Vedi altre date" : "Vedi le date libere"} <ArrowUpRight className="size-4" />
+                        </span>
                         {v.busy && (
                           <span className="absolute left-4 top-4 rounded-full bg-ink px-3 py-1.5 text-[13px] font-bold text-white">Occupato in queste date</span>
                         )}
@@ -77,7 +135,7 @@ export function Fleet({
                         {v.priceFromEur != null && (
                           <p className="shrink-0 text-right leading-tight">
                             <span className="block text-[13px] text-ink-3">da</span>
-                            <span className="font-wide text-[22px] font-extrabold tabular">€{v.priceFromEur}</span>
+                            <span className="font-narrow text-[30px] font-black leading-none tabular text-eu-deep">€{v.priceFromEur}</span>
                             <span className="block text-[13px] text-ink-3">al giorno</span>
                           </p>
                         )}

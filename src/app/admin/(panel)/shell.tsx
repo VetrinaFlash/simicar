@@ -20,6 +20,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { logoutAction } from "@/app/admin/actions/auth";
+import { adminServiceWorker } from "@/components/push-toggle";
 import type { AdminUser } from "@/lib/auth";
 
 const NAV = [
@@ -58,7 +59,7 @@ export function AdminShell({
   useEffect(() => setMoreOpen(false), [pathname]);
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js", { scope: "/admin/" }).catch(() => {});
+    if ("serviceWorker" in navigator) adminServiceWorker().catch(() => {});
   }, []);
 
   return (

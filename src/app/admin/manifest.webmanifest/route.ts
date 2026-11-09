@@ -9,7 +9,7 @@ export async function GET() {
       name: `${s.businessName} · Gestione`,
       short_name: "Gestione",
       start_url: "/admin",
-      scope: "/admin/",
+      scope: "/admin",
       display: "standalone",
       background_color: "#e9ebee",
       theme_color: "#1a3fa0",

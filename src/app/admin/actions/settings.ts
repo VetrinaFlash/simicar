@@ -84,3 +84,49 @@ export async function removeDemoDataAction() {
   await audit("demo.removed", { userId: me.id });
   revalidatePath("/", "layout");
 }
+
+export type TestPushResult = { lines: { ok: boolean; text: string }[] };
+
+/** Notifica di prova con diagnosi, per capire subito dove si blocca. */
+export async function testPushAction(): Promise<TestPushResult> {
+  await requireAdmin();
+  const { getEnv } = await import("@/lib/env");
+  const { sendPushes, vapidPairOk } = await import("@/lib/push");
+  const { newId } = await import("@/lib/security/crypto");
+  const env = await getEnv();
+  if (!env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY)
+    return { lines: [{ ok: false, text: "Mancano i Secret VAPID_PUBLIC_KEY e/o VAPID_PRIVATE_KEY su Cloudflare." }] };
+  const pair = await vapidPairOk();
+  if (pair === false)
+    return {
+      lines: [{ ok: false, text: "VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY non sono della stessa coppia: ricopia entrambe dallo stesso blocco generato, poi riattiva le notifiche sui telefoni." }],
+    };
+  const db = await getDb();
+  await db.insert(schema.notifications).values({
+    id: newId(),
+    type: "test",
+    title: "Notifica di prova",
+    body: "Se la vedi, le notifiche funzionano su questo dispositivo.",
+    url: "/admin/impostazioni",
+  });
+  const results = await sendPushes();
+  revalidatePath("/admin", "layout");
+  if (results.length === 0)
+    return { lines: [{ ok: false, text: "Nessun dispositivo registrato. Premi «Attiva su questo dispositivo» qui sopra e riprova." }] };
+  const explain = (st: number) =>
+    st === 403
+      ? "il dispositivo era stato attivato con chiavi diverse: è stato rimosso, riattiva le notifiche"
+      : st === 404 || st === 410
+        ? "attivazione scaduta: è stata rimossa, riattiva le notifiche"
+        : st === 401
+          ? "firma rifiutata: controlla VAPID_SUBJECT e le chiavi"
+          : st === 0
+            ? "errore di rete"
+            : `errore ${st}`;
+  return {
+    lines: results.map((r) => ({
+      ok: r.ok,
+      text: `${r.service}${r.device ? ` (${/Android/i.test(r.device) ? "Android" : /iPhone|iPad/i.test(r.device) ? "iPhone" : /Windows/i.test(r.device) ? "Windows" : /Mac/i.test(r.device) ? "Mac" : "dispositivo"})` : ""}: ${r.ok ? "inviata" : explain(r.status)}`,
+    })),
+  };
+}

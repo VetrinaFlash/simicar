@@ -1,6 +1,6 @@
 # Lavoro rimanente (prompt per continuare)
 
-Contesto: gestionale per il noleggio auto e furgoni "Manhattan" (presto "Similar"), dominio simicar.it.
+Contesto: gestionale per il noleggio auto e furgoni "Manhattan" (presto "Similar"), dominio noleggiomanhattan.it.
 Stack: Next.js 16 + OpenNext su Cloudflare Workers, D1 (Drizzle), R2, Resend, Web Push VAPID. Leggi `README.md`.
 Stile: palette del logo (rosso `--color-red`, blu `--color-eu`, navy `--color-eu-deep`), titoli Archivo condensato (`font-narrow font-black uppercase`), skyline di Manhattan animata nella hero.
 Lingua dell'interfaccia: italiano. Non usare mai `any` e non indebolire i controlli di sicurezza (requireAdmin in ogni action, isSameOrigin nelle API).
@@ -15,7 +15,7 @@ Lingua dell'interfaccia: italiano. Non usare mai `any` e non indebolire i contro
 1. Dati reali dal pannello Impostazioni: indirizzo, telefono, WhatsApp, email, P.IVA, orari, codice agenzia CaRGOS e comune della sede.
 2. Foto reali dei mezzi dal pannello Flotta, poi Impostazioni → "Rimuovi dati demo".
 3. Credenziali CaRGOS nei segreti del Worker (`CARGOS_USERNAME`, `CARGOS_PASSWORD`, `CARGOS_API_KEY`) e primo invio di prova.
-4. Resend: verifica del dominio simicar.it e segreto `RESEND_API_KEY`.
+4. Resend: verifica del dominio noleggiomanhattan.it e segreto `RESEND_API_KEY`.
 5. Cambio nome da Manhattan a Similar: logo in `public/brand/`, nome in Impostazioni, `RESEND_FROM` in `wrangler.jsonc`.
 
 ## Predisposto ma non attivo

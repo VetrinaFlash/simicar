@@ -20,9 +20,9 @@
   "triggers": { "crons": ["0 6 * * *"] },
   "vars": {
     "APP_ENV": "production",
-    "PUBLIC_SITE_URL": "https://simicar.it",
-    "RESEND_FROM": "Manhattan Noleggi <prenotazioni@simicar.it>",
-    "VAPID_SUBJECT": "mailto:prenotazioni@simicar.it",
+    "PUBLIC_SITE_URL": "https://noleggiomanhattan.it",
+    "RESEND_FROM": "Manhattan Noleggio <prenotazioni@noleggiomanhattan.it>",
+    "VAPID_SUBJECT": "mailto:prenotazioni@noleggiomanhattan.it",
     "NEXT_PUBLIC_TURNSTILE_SITE_KEY": ""
   }
   // Segreti (npx wrangler secret put NOME):

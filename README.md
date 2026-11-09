@@ -52,8 +52,8 @@ Next.js 16 + Cloudflare Workers (OpenNext), database D1, foto su R2, email con R
    | `TURNSTILE_SECRET_KEY` | facoltativo, da Cloudflare Turnstile |
 
    Se usi Turnstile, metti la chiave pubblica in `NEXT_PUBLIC_TURNSTILE_SITE_KEY` dentro `wrangler.jsonc`.
-3. **Dominio**: Worker → Settings → Domains & Routes → aggiungi `simicar.it` e `www.simicar.it` (il dominio deve essere su Cloudflare DNS).
-4. **Email**: su Resend aggiungi il dominio `simicar.it` e inserisci i record DNS che ti indica. Il mittente è in `RESEND_FROM` dentro `wrangler.jsonc`.
+3. **Dominio**: Worker → Settings → Domains & Routes → aggiungi `noleggiomanhattan.it` e `www.noleggiomanhattan.it` (il dominio deve essere su Cloudflare DNS).
+4. **Email**: su Resend aggiungi il dominio `noleggiomanhattan.it` e inserisci i record DNS che ti indica. Il mittente è in `RESEND_FROM` dentro `wrangler.jsonc`.
 5. **Primo accesso**: apri `/admin/login` sull’indirizzo `*.workers.dev` assegnato al Worker (o sul dominio personalizzato quando sarà configurato). Username: `M4nh4tt4n`. Password: valore del secret Cloudflare `ADMIN_PASSWORD`. Il primo login crea automaticamente l’account in D1. La pagina `/admin/setup` è disabilitata e la password non viene salvata nel codice. **Usare la stessa stringa per username e password è debole: modificare `ADMIN_PASSWORD` prima dell’uso reale con dati dei clienti.**
 6. **Impostazioni**: dal pannello inserisci nome, indirizzo, telefono, WhatsApp, email e orari. Attiva le notifiche su ogni telefono (su iPhone prima "Aggiungi alla schermata Home").
 7. **Dati demo**: quando il cliente inizia a lavorare davvero, vai su Impostazioni → *Rimuovi dati demo*.

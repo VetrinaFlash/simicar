@@ -22,7 +22,8 @@ export async function sendEmail(mail: Email): Promise<boolean> {
       subject: mail.subject,
       html: mail.html,
       text: mail.text,
-      ...(mail.replyTo ? { reply_to: mail.replyTo } : {}),
+      // Le risposte dei clienti vanno sempre a una casella reale: quella in Impostazioni o, se vuota, il mittente
+      reply_to: mail.replyTo || senderAddress(env.RESEND_FROM),
     }),
   });
   if (!res.ok) {

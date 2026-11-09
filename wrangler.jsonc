@@ -28,6 +28,7 @@
     "NEXT_PUBLIC_TURNSTILE_SITE_KEY": ""
   }
   // Segreti (npx wrangler secret put NOME):
-  //   RESEND_API_KEY, TURNSTILE_SECRET_KEY, CRON_SECRET, ADMIN_PASSWORD, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, IP_HASH_SALT
+  //   ADMIN_PASSWORD, RESEND_API_KEY, TURNSTILE_SECRET_KEY (facoltativo)
+  //   VAPID, cron e salt IP sono generati automaticamente nel database (src/lib/secrets.ts)
   //   CARGOS_USERNAME, CARGOS_PASSWORD, CARGOS_API_KEY (facoltativi: invio automatico alla Polizia)
 }

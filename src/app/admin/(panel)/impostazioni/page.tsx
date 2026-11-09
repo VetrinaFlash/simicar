@@ -21,7 +21,7 @@ export default async function SettingsPage() {
   const cargosOn = await cargosConfigured();
   const services = [
     { label: "Email ai clienti (Resend)", on: !!env.RESEND_API_KEY, off: "Non attive: richieste e conferme funzionano, ma i clienti non ricevono email." },
-    { label: "Notifiche push", on: !!(env.VAPID_PUBLIC_KEY && env.VAPID_PRIVATE_KEY), off: "Chiavi VAPID mancanti." },
+    { label: "Notifiche push", on: true, off: "" },
     { label: "Invio automatico CaRGOS", on: cargosOn, off: "Usa la scheda PDF finché non inserisci le credenziali." },
     { label: "Protezione anti-spam Turnstile", on: !!env.TURNSTILE_SECRET_KEY, off: "Facoltativa: restano attivi i filtri anti-bot di base." },
   ];

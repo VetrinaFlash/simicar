@@ -40,15 +40,12 @@ Next.js 16 + Cloudflare Workers (OpenNext), database D1, foto su R2, email con R
    - Deploy command: `npm run cf:deploy`
 
    Il database D1 (`simicar-db`) e il bucket R2 (`simicar-media`) vengono creati automaticamente al primo deploy. Le tabelle e i dati demo vengono caricati dal comando `wrangler d1 migrations apply`, già incluso in `cf:deploy`.
-2. **Segreti**: Worker `simicar` → Settings → Variables and Secrets. Aggiungi, come *Secret*:
+2. **Segreti** (le chiavi delle notifiche, il segreto del cron e il salt per gli IP si generano da soli nel database al primo utilizzo: non vanno configurati): Worker `simicar` → Settings → Variables and Secrets. Aggiungi, come *Secret*:
    | Nome | Valore |
    |---|---|
    | `ADMIN_PASSWORD` | password fissa del pannello, impostata solo come Cloudflare Secret |
    | `CARGOS_USERNAME`, `CARGOS_PASSWORD`, `CARGOS_API_KEY` | facoltativi: credenziali CaRGOS rilasciate dalla Questura (API key di 48 caratteri). Poi, in Impostazioni → CaRGOS, inserisci il codice agenzia e il comune della sede |
-   | `CRON_SECRET` | stringa casuale |
-   | `IP_HASH_SALT` | stringa casuale |
    | `RESEND_API_KEY` | da resend.com |
-   | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | generati con `npm run vapid:generate` |
    | `TURNSTILE_SECRET_KEY` | facoltativo, da Cloudflare Turnstile |
 
    Se usi Turnstile, metti la chiave pubblica in `NEXT_PUBLIC_TURNSTILE_SITE_KEY` dentro `wrangler.jsonc`.

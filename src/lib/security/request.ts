@@ -1,6 +1,6 @@
 import "server-only";
 import { headers } from "next/headers";
-import { getEnv } from "@/lib/env";
+import { getIpSalt } from "@/lib/secrets";
 import { sha256Hex } from "./crypto";
 
 export async function clientIp(): Promise<string> {
@@ -10,8 +10,7 @@ export async function clientIp(): Promise<string> {
 
 /** L'IP non viene mai salvato in chiaro (GDPR): solo un hash con salt. */
 export async function ipHash(): Promise<string> {
-  const env = await getEnv();
-  return (await sha256Hex(`${env.IP_HASH_SALT ?? "salt"}:${await clientIp()}`)).slice(0, 32);
+  return (await sha256Hex(`${await getIpSalt()}:${await clientIp()}`)).slice(0, 32);
 }
 
 export async function userAgent(): Promise<string | null> {

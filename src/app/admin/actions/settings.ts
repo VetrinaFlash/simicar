@@ -90,16 +90,12 @@ export type TestPushResult = { lines: { ok: boolean; text: string }[] };
 /** Notifica di prova con diagnosi, per capire subito dove si blocca. */
 export async function testPushAction(): Promise<TestPushResult> {
   await requireAdmin();
-  const { getEnv } = await import("@/lib/env");
   const { sendPushes, vapidPairOk } = await import("@/lib/push");
   const { newId } = await import("@/lib/security/crypto");
-  const env = await getEnv();
-  if (!env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY)
-    return { lines: [{ ok: false, text: "Mancano i Secret VAPID_PUBLIC_KEY e/o VAPID_PRIVATE_KEY su Cloudflare." }] };
   const pair = await vapidPairOk();
   if (pair === false)
     return {
-      lines: [{ ok: false, text: "VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY non sono della stessa coppia: ricopia entrambe dallo stesso blocco generato, poi riattiva le notifiche sui telefoni." }],
+      lines: [{ ok: false, text: "Le chiavi delle notifiche nel database non sono valide. Contatta l'assistenza." }],
     };
   const db = await getDb();
   await db.insert(schema.notifications).values({

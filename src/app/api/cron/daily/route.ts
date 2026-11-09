@@ -2,6 +2,7 @@ import { and, eq, gte, lt } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { getEnv } from "@/lib/env";
 import { notifyAdmins } from "@/lib/notify";
+import { getCronSecret } from "@/lib/secrets";
 import { timingSafeEqual } from "@/lib/security/crypto";
 import { addDays, romeToUtc, todayRome } from "@/lib/time";
 import { expiringItems, vehicleName } from "@/lib/vehicles";
@@ -10,7 +11,7 @@ import { expiringItems, vehicleName } from "@/lib/vehicles";
 export async function POST(req: Request) {
   const env = await getEnv();
   const secret = req.headers.get("x-cron-secret") ?? "";
-  if (!env.CRON_SECRET || !timingSafeEqual(secret, env.CRON_SECRET)) return new Response("Forbidden", { status: 403 });
+  if (!secret || !timingSafeEqual(secret, await getCronSecret())) return new Response("Forbidden", { status: 403 });
 
   const db = await getDb();
   const today = todayRome();

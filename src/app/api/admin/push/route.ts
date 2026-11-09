@@ -2,8 +2,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { adminOrNull } from "@/lib/auth";
 import { getDb, schema } from "@/lib/db";
-import { getEnv } from "@/lib/env";
-import { isAllowedPushEndpoint } from "@/lib/push";
+import { isAllowedPushEndpoint, vapidPublicKey } from "@/lib/push";
 import { newId } from "@/lib/security/crypto";
 import { isSameOrigin } from "@/lib/security/request";
 
@@ -12,8 +11,7 @@ const body = z.object({ endpoint: z.string().url().max(1000) });
 export async function GET() {
   const user = await adminOrNull();
   if (!user) return Response.json({ error: "Non autorizzato" }, { status: 401 });
-  const env = await getEnv();
-  return Response.json({ publicKey: env.VAPID_PUBLIC_KEY ?? null });
+  return Response.json({ publicKey: await vapidPublicKey() }, { headers: { "cache-control": "no-store" } });
 }
 
 export async function POST(req: Request) {

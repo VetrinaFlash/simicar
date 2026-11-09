@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 import { getEnv } from "@/lib/env";
 import { b64urlToBytes, bytesToB64url } from "@/lib/security/crypto";
+import { getVapid } from "@/lib/secrets";
 
 /*
  * Web Push con VAPID (RFC 8292), implementato con WebCrypto (gira su Workers).
@@ -13,22 +14,26 @@ import { b64urlToBytes, bytesToB64url } from "@/lib/security/crypto";
 
 let cachedKey: { pub: string; key: CryptoKey } | null = null;
 
-async function signingKey(env: CloudflareEnv) {
-  if (!env.VAPID_PUBLIC_KEY || !env.VAPID_PRIVATE_KEY) return null;
-  if (cachedKey?.pub === env.VAPID_PUBLIC_KEY) return cachedKey.key;
-  const pub = b64urlToBytes(env.VAPID_PUBLIC_KEY);
-  if (pub.length !== 65 || pub[0] !== 4) throw new Error("VAPID_PUBLIC_KEY non valida");
+async function signingKey(): Promise<{ key: CryptoKey; pub: string }> {
+  const v = await getVapid();
+  if (cachedKey?.pub === v.publicKey) return { key: cachedKey.key, pub: v.publicKey };
+  const pub = b64urlToBytes(v.publicKey);
   const jwk: JsonWebKey = {
     kty: "EC",
     crv: "P-256",
-    d: env.VAPID_PRIVATE_KEY,
+    d: v.privateKey,
     x: bytesToB64url(pub.slice(1, 33)),
     y: bytesToB64url(pub.slice(33, 65)),
     ext: false,
   };
   const key = await crypto.subtle.importKey("jwk", jwk, { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
-  cachedKey = { pub: env.VAPID_PUBLIC_KEY, key };
-  return key;
+  cachedKey = { pub: v.publicKey, key };
+  return { key, pub: v.publicKey };
+}
+
+/** Chiave pubblica da usare nel browser per attivare le notifiche. */
+export async function vapidPublicKey() {
+  return (await getVapid()).publicKey;
 }
 
 async function vapidJwt(env: CloudflareEnv, audience: string, key: CryptoKey) {
@@ -55,11 +60,11 @@ const SERVICE_NAMES: [RegExp, string][] = [
 
 /** Controlla che chiave pubblica e privata VAPID siano della stessa coppia. */
 export async function vapidPairOk(): Promise<boolean | null> {
-  const env = await getEnv();
-  const key = await signingKey(env).catch(() => null);
-  if (!key || !env.VAPID_PUBLIC_KEY) return null;
+  const k = await signingKey().catch(() => null);
+  if (!k) return null;
+  const key = k.key;
   try {
-    const pub = await crypto.subtle.importKey("raw", b64urlToBytes(env.VAPID_PUBLIC_KEY), { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+    const pub = await crypto.subtle.importKey("raw", b64urlToBytes(k.pub), { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
     const data = new TextEncoder().encode("verifica-vapid");
     const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, key, data);
     return await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, pub, sig, data);
@@ -71,8 +76,7 @@ export async function vapidPairOk(): Promise<boolean | null> {
 /** Invia una push "sveglia" a tutti i dispositivi registrati e restituisce l'esito per ciascuno. */
 export async function sendPushes(): Promise<PushResult[]> {
   const env = await getEnv();
-  const key = await signingKey(env);
-  if (!key) return [];
+  const { key, pub } = await signingKey();
   const db = await getDb();
   const subs = await db.select().from(schema.pushSubscriptions);
   return Promise.all(
@@ -86,7 +90,7 @@ export async function sendPushes(): Promise<PushResult[]> {
           headers: {
             TTL: "86400",
             Urgency: "high",
-            Authorization: `vapid t=${jwt}, k=${env.VAPID_PUBLIC_KEY}`,
+            Authorization: `vapid t=${jwt}, k=${pub}`,
           },
           body: "",
         });

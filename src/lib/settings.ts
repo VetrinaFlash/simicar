@@ -5,13 +5,13 @@ import { sql } from "drizzle-orm";
 
 export const DEFAULT_SETTINGS = {
   businessName: "Il tuo noleggio",
-  city: "La tua città",
+  city: "",
   address: "",
   phone: "",
   whatsapp: "",
   email: "",
   notifyEmail: "",
-  hours: "Lun–Sab 8:30–13:00 / 15:00–19:00",
+  hours: "",
   openFrom: "08:30",
   openTo: "19:00",
   minNoticeHours: "12",

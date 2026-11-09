@@ -31,3 +31,9 @@ export async function sendEmail(mail: Email): Promise<boolean> {
   }
   return true;
 }
+
+/** Indirizzo del mittente: "Nome <a@b.it>" → "a@b.it". Usato se in Impostazioni non c'è un'email. */
+export function senderAddress(from: string | undefined): string {
+  const m = /<([^>]+)>/.exec(from ?? "");
+  return (m?.[1] ?? from ?? "").trim();
+}

@@ -6,7 +6,7 @@ import { audit } from "@/lib/audit";
 import { BookingError, insertBookingIfFree } from "@/lib/bookings";
 import { getDb, schema } from "@/lib/db";
 import { getEnv, runInBackground } from "@/lib/env";
-import { sendEmail } from "@/lib/email/send";
+import { sendEmail, senderAddress } from "@/lib/email/send";
 import { adminNewRequestMail, adminSaleInquiryMail, requestReceivedMail } from "@/lib/email/templates";
 import { notifyAdmins } from "@/lib/notify";
 import { newId, sha256Hex } from "@/lib/security/crypto";
@@ -104,7 +104,7 @@ export async function requestBookingAction(_prev: RequestState, form: FormData):
   const env = await getEnv();
   const name = vehicleName(vehicle);
   const mailData = { code: created.code, firstName: d.firstName, vehicleName: name, startAt, endAt, depositEur: vehicle.depositEur };
-  const adminTo = s.notifyEmail || s.email;
+  const adminTo = s.notifyEmail || s.email || senderAddress(env.RESEND_FROM);
   const url = new URL(`/admin/prenotazioni/${created.id}`, env.PUBLIC_SITE_URL).toString();
 
   await runInBackground(
@@ -162,7 +162,7 @@ export async function saleInquiryAction(_prev: InquiryState, form: FormData): Pr
   const [s, env] = await Promise.all([getSettings(), getEnv()]);
   const name = vehicleName(vehicle);
   const price = vehicle.salePriceEur != null ? `€ ${vehicle.salePriceEur.toLocaleString("it-IT")}` : "prezzo su richiesta";
-  const adminTo = s.notifyEmail || s.email;
+  const adminTo = s.notifyEmail || s.email || senderAddress(env.RESEND_FROM);
   await runInBackground(
     Promise.all([
       adminTo

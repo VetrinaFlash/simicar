@@ -79,7 +79,7 @@ export function Fleet({
         {vehicles.length === 0 ? (
           <p className="rounded-2xl bg-paper p-10 text-center text-ink-2">I mezzi saranno disponibili a breve.</p>
         ) : (
-          <motion.ul layout className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.ul layout className="grid gap-x-6 gap-y-5 sm:grid-cols-2 sm:gap-y-12 lg:grid-cols-3">
             <AnimatePresence mode="popLayout" initial={false}>
               {vehicles.map((v) => {
                 const cover = v.photos[0];
@@ -93,8 +93,8 @@ export function Fleet({
                     exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ type: "spring", bounce: 0, duration: 0.5 }}
                   >
-                    <Link href={`/flotta/${v.slug}${query}`} className="group block focus-visible:outline-offset-4">
-                      <div className={cx("relative aspect-[4/3] overflow-hidden rounded-[20px] bg-concrete-2", v.busy && "opacity-55")}>
+                    <Link href={`/flotta/${v.slug}${query}`} className="group grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] items-center gap-4 focus-visible:outline-offset-4 sm:block">
+                      <div className={cx("relative aspect-[4/3] overflow-hidden rounded-[14px] bg-concrete-2 sm:rounded-[20px]", v.busy && "opacity-55")}>
                         {cover ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -117,26 +117,26 @@ export function Fleet({
                             className="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                           />
                         )}
-                        <span className="absolute bottom-4 right-4 inline-flex translate-y-2 items-center gap-1.5 rounded-full bg-paper px-4 py-2 text-[14px] font-bold text-eu-deep opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
+                        <span className="absolute bottom-4 right-4 hidden translate-y-2 sm:inline-flex items-center gap-1.5 rounded-full bg-paper px-4 py-2 text-[14px] font-bold text-eu-deep opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
                           {v.busy ? "Vedi altre date" : "Vedi le date libere"} <ArrowUpRight className="size-4" />
                         </span>
                         {v.busy && (
-                          <span className="absolute left-4 top-4 rounded-full bg-ink px-3 py-1.5 text-[13px] font-bold text-white">Occupato in queste date</span>
+                          <span className="absolute left-2 top-2 rounded-full bg-ink px-2.5 py-1 text-[12px] font-bold text-white sm:left-4 sm:top-4 sm:px-3 sm:py-1.5 sm:text-[13px]">Occupato<span className="hidden sm:inline"> in queste date</span></span>
                         )}
                       </div>
-                      <div className="mt-4 flex items-start justify-between gap-4">
+                      <div className="flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                         <div className="min-w-0">
                           <p className="text-[13px] font-bold text-red">{v.type === "furgone" ? "Furgone" : "Auto"}</p>
-                          <h3 className="truncate text-[22px] font-extrabold leading-tight tracking-tight">
+                          <h3 className="truncate text-[19px] sm:text-[22px] font-extrabold leading-tight tracking-tight">
                             {v.brand} <span className="font-semibold">{v.model}</span>
                           </h3>
-                          <p className="mt-1.5 text-[15px] text-ink-2">{v.specs.join(" · ")}</p>
+                          <p className="mt-1 line-clamp-2 text-[14px] text-ink-2 sm:mt-1.5 sm:text-[15px]">{v.specs.join(" · ")}</p>
                         </div>
                         {v.priceFromEur != null && (
-                          <p className="shrink-0 text-right leading-tight">
-                            <span className="block text-[13px] text-ink-3">da</span>
-                            <span className="font-narrow text-[30px] font-black leading-none tabular text-eu-deep">€{v.priceFromEur}</span>
-                            <span className="block text-[13px] text-ink-3">al giorno</span>
+                          <p className="shrink-0 leading-tight sm:text-right">
+                            <span className="text-[13px] text-ink-3 sm:block">da </span>
+                            <span className="font-narrow text-[24px] sm:text-[30px] font-black leading-none tabular text-eu-deep">€{v.priceFromEur}</span>
+                            <span className="text-[13px] text-ink-3 sm:block"> al giorno</span>
                           </p>
                         )}
                       </div>

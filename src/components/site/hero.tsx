@@ -138,7 +138,7 @@ export function Hero({
                   setDal(e.target.value);
                   if (al && e.target.value > al) setAl("");
                 }}
-                className="mt-2 block h-14 w-full rounded-xl bg-white/10 px-3 text-[17px] font-bold text-white ring-2 ring-inset ring-white/25 [color-scheme:dark] focus:outline-none focus:ring-white"
+                className="mt-2 block h-14 w-full min-w-0 appearance-none rounded-xl bg-white/10 px-3 text-left text-[16px] sm:text-[17px] font-bold text-white ring-2 ring-inset ring-white/25 [color-scheme:dark] focus:outline-none focus:ring-white"
               />
             </label>
             <label className="block">
@@ -149,7 +149,7 @@ export function Hero({
                 min={dal || today}
                 value={al}
                 onChange={(e) => setAl(e.target.value)}
-                className="mt-2 block h-14 w-full rounded-xl bg-white/10 px-3 text-[17px] font-bold text-white ring-2 ring-inset ring-white/25 [color-scheme:dark] focus:outline-none focus:ring-white"
+                className="mt-2 block h-14 w-full min-w-0 appearance-none rounded-xl bg-white/10 px-3 text-left text-[16px] sm:text-[17px] font-bold text-white ring-2 ring-inset ring-white/25 [color-scheme:dark] focus:outline-none focus:ring-white"
               />
             </label>
           </div>

@@ -27,13 +27,13 @@ export function SaleSection({ vehicles }: { vehicles: SaleVehicle[] }) {
           </div>
           <p className="max-w-md text-[17px] text-ink-2">Mezzi che conosciamo bene: tagliandati da noi, con la loro storia di manutenzione.</p>
         </div>
-        <ul className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid gap-x-6 gap-y-5 sm:grid-cols-2 sm:gap-y-12 lg:grid-cols-3">
           {vehicles.map((v) => {
             const cover = v.photos[0];
             return (
               <li key={v.id}>
-                <Link href={`/vendita/${v.slug}`} className="group block focus-visible:outline-offset-4">
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-concrete-2">
+                <Link href={`/vendita/${v.slug}`} className="group grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] items-center gap-4 focus-visible:outline-offset-4 sm:block">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-[14px] bg-concrete-2 sm:rounded-[20px]">
                     {cover ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -46,21 +46,21 @@ export function SaleSection({ vehicles }: { vehicles: SaleVehicle[] }) {
                       <VehicleArt type={v.type} className="absolute inset-0 m-auto w-3/5 text-ink-3" />
                     )}
                     {/* Il prezzo come un cartellino da concessionaria */}
-                    <span className="absolute left-4 top-4 rounded-xl bg-red px-3.5 py-2 text-white shadow-lg">
-                      <span className="font-narrow block text-[26px] font-black leading-none tabular">
+                    <span className="absolute left-2 top-2 rounded-lg bg-red px-2 py-1 text-white shadow-lg sm:left-4 sm:top-4 sm:rounded-xl sm:px-3.5 sm:py-2">
+                      <span className="font-narrow block text-[17px] sm:text-[26px] font-black leading-none tabular">
                         {v.salePriceEur != null ? `€${v.salePriceEur.toLocaleString("it-IT")}` : "Su richiesta"}
                       </span>
                     </span>
-                    <span className="absolute bottom-4 right-4 inline-flex translate-y-2 items-center gap-1.5 rounded-full bg-paper px-4 py-2 text-[14px] font-bold text-eu-deep opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
+                    <span className="absolute bottom-4 right-4 hidden translate-y-2 sm:inline-flex items-center gap-1.5 rounded-full bg-paper px-4 py-2 text-[14px] font-bold text-eu-deep opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
                       Scopri di più <ArrowUpRight className="size-4" />
                     </span>
                   </div>
-                  <div className="mt-4">
+                  <div className="sm:mt-4">
                     <p className="text-[13px] font-bold text-red">{v.type === "furgone" ? "Furgone" : "Auto"}</p>
-                    <h3 className="truncate text-[22px] font-extrabold leading-tight tracking-tight">
+                    <h3 className="truncate text-[19px] sm:text-[22px] font-extrabold leading-tight tracking-tight">
                       {v.brand} <span className="font-semibold">{v.model}</span>
                     </h3>
-                    <p className="mt-1.5 text-[15px] text-ink-2">{[...saleFacts(v), ...v.specs.slice(-1)].join(" · ")}</p>
+                    <p className="mt-1 line-clamp-2 text-[14px] text-ink-2 sm:mt-1.5 sm:text-[15px]">{[...saleFacts(v), ...v.specs.slice(-1)].join(" · ")}</p>
                   </div>
                 </Link>
               </li>

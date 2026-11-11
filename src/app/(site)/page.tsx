@@ -74,7 +74,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         </div>
       </section>
 
-      <section id="dove" className="scroll-mt-16 bg-eu-deep py-16 text-white md:py-24">
+      <section id="dove" className="scroll-mt-16 bg-eu-deep pb-12 pt-16 text-white md:py-24">
         <div className="mx-auto grid max-w-[1320px] gap-10 px-5 md:px-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <div>
             <h2 className="font-narrow text-[clamp(2.6rem,5.4vw,4.6rem)] font-black uppercase leading-[0.9]">Dove siamo</h2>
@@ -89,7 +89,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
               </p>
             )}
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 empty:hidden">
             {s.phone && (
               <a href={`tel:${s.phone}`} className="flex h-16 items-center gap-4 rounded-2xl bg-red px-6 text-[18px] font-bold text-white transition-colors hover:bg-red-deep">
                 <Phone className="size-5" /> Chiama <span className="ml-auto font-normal tabular text-white/80">{s.phone}</span>

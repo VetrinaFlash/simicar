@@ -33,17 +33,17 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
       {children}
 
-      <footer className="bg-eu-deep text-white/70">
+      <footer className="border-t border-white/10 bg-eu-deep text-white/70">
         <div className="mx-auto grid max-w-[1320px] gap-8 px-5 py-14 md:grid-cols-[1.5fr_1fr_1fr] md:px-8">
           <div>
             <p className="font-narrow text-4xl font-black uppercase text-white">{s.businessName}</p>
             <p className="mt-2 max-w-sm text-[15px]">Noleggio auto e furgoni{s.city ? ` a ${s.city}` : ""}.</p>
           </div>
-          <div className="space-y-1.5 text-[15px]">
+          <div className="space-y-1.5 text-[15px] empty:hidden">
             {s.address && <p>{s.address}</p>}
             {s.hours && <p>{s.hours}</p>}
           </div>
-          <div className="space-y-1.5 text-[15px]">
+          <div className="space-y-1.5 text-[15px] empty:hidden">
             {s.phone && <a href={`tel:${s.phone}`} className="block hover:text-white">Tel. {s.phone}</a>}
             {s.whatsapp && <a href={waHref(s.whatsapp)} target="_blank" rel="noopener noreferrer" className="block hover:text-white">WhatsApp</a>}
             {s.email && <a href={`mailto:${s.email}`} className="block hover:text-white">{s.email}</a>}

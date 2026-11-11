@@ -34,7 +34,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       {children}
 
       <footer className="border-t border-white/10 bg-eu-deep text-white/70">
-        <div className="mx-auto grid max-w-[1320px] gap-8 px-5 py-14 md:grid-cols-[1.5fr_1fr_1fr] md:px-8">
+        <div className="mx-auto grid max-w-[1320px] grid-cols-[minmax(0,1fr)] gap-8 px-5 py-14 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)] md:px-8">
           <div>
             <p className="font-narrow text-4xl font-black uppercase text-white">{s.businessName}</p>
             <p className="mt-2 max-w-sm text-[15px]">Noleggio auto e furgoni{s.city ? ` a ${s.city}` : ""}.</p>
@@ -46,11 +46,11 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
           <div className="space-y-1.5 text-[15px] empty:hidden">
             {s.phone && <a href={`tel:${s.phone}`} className="block hover:text-white">Tel. {s.phone}</a>}
             {s.whatsapp && <a href={waHref(s.whatsapp)} target="_blank" rel="noopener noreferrer" className="block hover:text-white">WhatsApp</a>}
-            {s.email && <a href={`mailto:${s.email}`} className="block hover:text-white">{s.email}</a>}
+            {s.email && <a href={`mailto:${s.email}`} className="block [overflow-wrap:anywhere] hover:text-white">{s.email}</a>}
           </div>
         </div>
         <div className="border-t border-white/10">
-          <div className="mx-auto flex max-w-[1320px] flex-wrap justify-between gap-3 px-5 py-5 text-[13px] md:px-8">
+          <div className="mx-auto flex max-w-[1320px] flex-wrap justify-between gap-3 px-5 pb-28 pt-5 text-[13px] md:px-8 md:pb-5">
             <p>
               © {year} {s.businessName}
               {s.vatNumber && ` · P.IVA ${s.vatNumber}`} · <Link href="/privacy" className="underline-offset-2 hover:underline">Privacy</Link>

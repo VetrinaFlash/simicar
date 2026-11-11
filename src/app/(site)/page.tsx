@@ -75,11 +75,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       </section>
 
       <section id="dove" className="scroll-mt-16 bg-eu-deep pb-12 pt-16 text-white md:py-24">
-        <div className="mx-auto grid max-w-[1320px] gap-10 px-5 md:px-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
+        <div className="mx-auto grid max-w-[1320px] grid-cols-[minmax(0,1fr)] gap-10 px-5 md:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-end">
           <div>
             <h2 className="font-narrow text-[clamp(2.6rem,5.4vw,4.6rem)] font-black uppercase leading-[0.9]">Dove siamo</h2>
             {s.address ? (
-              <p className="mt-6 max-w-xl text-[clamp(1.3rem,2.2vw,1.7rem)] font-bold leading-snug">{s.address}</p>
+              <p className="mt-6 max-w-xl text-[clamp(1.3rem,2.2vw,1.7rem)] font-bold leading-snug [overflow-wrap:anywhere]">{s.address}</p>
             ) : (
               <p className="mt-6 max-w-xl text-[19px] text-white/70">Chiamaci o scrivici: ti diamo tutte le indicazioni per il ritiro.</p>
             )}
@@ -91,23 +91,23 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </div>
           <div className="flex flex-col gap-3 empty:hidden">
             {s.phone && (
-              <a href={`tel:${s.phone}`} className="flex h-16 items-center gap-4 rounded-2xl bg-red px-6 text-[18px] font-bold text-white transition-colors hover:bg-red-deep">
-                <Phone className="size-5" /> Chiama <span className="ml-auto font-normal tabular text-white/80">{s.phone}</span>
+              <a href={`tel:${s.phone}`} className="flex h-16 min-w-0 items-center gap-4 rounded-2xl bg-red px-6 text-[18px] font-bold text-white transition-colors hover:bg-red-deep">
+                <Phone className="size-5 shrink-0" /> Chiama <span className="ml-auto min-w-0 truncate text-[16px] font-normal tabular text-white/80 sm:text-[18px]">{s.phone}</span>
               </a>
             )}
             {s.whatsapp && (
-              <a href={waHref(s.whatsapp)} target="_blank" rel="noopener noreferrer" className="flex h-16 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
+              <a href={waHref(s.whatsapp)} target="_blank" rel="noopener noreferrer" className="flex h-16 min-w-0 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
                 <MessageCircle className="size-5" /> Scrivici su WhatsApp
               </a>
             )}
             {s.mapsUrl && (
-              <a href={s.mapsUrl} target="_blank" rel="noopener noreferrer" className="flex h-16 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
+              <a href={s.mapsUrl} target="_blank" rel="noopener noreferrer" className="flex h-16 min-w-0 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
                 <MapPin className="size-5" /> Apri in Google Maps
               </a>
             )}
             {s.email && (
-              <a href={`mailto:${s.email}`} className="flex h-16 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
-                <Mail className="size-5" /> {s.email}
+              <a href={`mailto:${s.email}`} className="flex h-16 min-w-0 items-center gap-4 rounded-2xl bg-white/10 px-6 text-[18px] font-bold ring-1 ring-white/20 transition-colors hover:bg-white/15">
+                <Mail className="size-5 shrink-0" /> <span className="min-w-0 truncate"><span className="sm:hidden">Scrivici una email</span><span className="hidden sm:inline">{s.email}</span></span>
               </a>
             )}
           </div>

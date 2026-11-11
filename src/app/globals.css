@@ -28,6 +28,18 @@
 }
 
 @layer base {
+  /* Nessuno scorrimento laterale su telefono, anche con testo ingrandito
+     o animazioni che partono fuori schermo. "clip" non rompe lo sticky. */
+  html,
+  body {
+    overflow-x: clip;
+    max-width: 100%;
+  }
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: break-word;
+  }
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
